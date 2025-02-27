@@ -6,41 +6,51 @@
     <title>Daily News</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
-        /* Custom styles for personal touch */
-        body {
-            font-family: 'Montserrat', sans-serif;
-        }
-        #date-list a {
-            transition: all 0.3s ease;
-        }
-        #date-list a:hover {
-            transform: scale(1.05);
-            color: #ef4444; /* Red accent */
-        }
-        #news-content {
-            animation: fadeIn 0.5s;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+        body { font-family: 'Montserrat', sans-serif; }
+        #date-list a { transition: all 0.3s ease; }
+        #date-list a:hover { transform: scale(1.05); color: #ef4444; }
+        #news-content { animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        #sidebar { transition: width 0.3s ease; }
+        .sidebar-hidden { width: 0 !important; overflow: hidden; }
     </style>
 </head>
-<body class="bg-gray-900 text-white">
-    <div class="flex flex-col md:flex-row h-screen">
+<body class="bg-gray-900 text-white flex flex-col min-h-screen">
+    <!-- Header -->
+    <header class="bg-gray-800 p-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-red-500">Daily News</h1>
+        <nav class="space-x-4">
+            <a href="#" class="text-blue-400 hover:text-blue-300">Home</a>
+            <a href="#" class="text-blue-400 hover:text-blue-300">About</a>
+            <a href="#" class="text-blue-400 hover:text-blue-300">Contact</a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <div class="flex flex-col md:flex-row flex-grow">
         <!-- Left Menu -->
-        <div class="w-full md:w-1/6 bg-gray-800 p-3 overflow-y-auto"> 
-            <h2 class="text-lg font-bold mb-3 text-red-500">Select Date</h2>
-            <ul id="date-list" class="space-y-2 text-sm"></ul>
+        <div id="sidebar" class="w-full md:w-1/6 bg-gray-800 p-4 overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-red-500">Select Date</h2>
+                <button id="toggle-sidebar" class="text-white md:hidden hover:text-red-500 focus:outline-none">✕</button>
+            </div>
+            <ul id="date-list" class="space-y-2"></ul>
         </div>
         <!-- Right Content Area -->
-        <div class="w-full md:w-5/6 p-4 overflow-y-auto"> 
+        <div class="w-full md:w-5/6 p-4 overflow-y-auto flex flex-col">
             <div class="mb-4">
                 <input type="text" id="search-input" placeholder="Search news..." class="w-full p-2 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-red-500">
             </div>
-            <div id="news-content" class="prose prose-invert max-w-none"></div>
+            <div id="news-content" class="prose prose-invert max-w-none flex-grow"></div>
         </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 p-4 text-center text-gray-400">
+        <p>&copy; 2023 Daily News. All rights reserved.</p>
+        <p><a href="#" class="text-blue-400 hover:text-blue-300">Privacy Policy</a> | <a href="#" class="text-blue-400 hover:text-blue-300">Terms of Service</a></p>
+    </footer>
+
     <script src="https://unpkg.com/lunr/lunr.js"></script>
     <script src="app.js"></script>
 </body>
