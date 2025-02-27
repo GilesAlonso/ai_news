@@ -20,8 +20,10 @@ fetch('available-dates.json')
 
 // Load news content when a date is clicked
 document.getElementById('date-list').addEventListener('click', (e) => {
-    if (e.target.tagName === 'A') {
-        const date = e.target.getAttribute('data-date');
+    const link = e.target.closest('a');
+    if (link) {
+        e.preventDefault(); // Prevent default anchor behavior
+        const date = link.getAttribute('data-date');
         loadNews(date);
     }
 });
@@ -38,7 +40,18 @@ function loadNews(date) {
         });
 }
 
-// Search functionality (assuming Lunr.js is already set up)
+// Toggle sidebar visibility
+const sidebar = document.getElementById('sidebar');
+const toggleButton = document.getElementById('toggle-sidebar');
+let isSidebarVisible = true;
+
+toggleButton.addEventListener('click', () => {
+    isSidebarVisible = !isSidebarVisible;
+    sidebar.classList.toggle('sidebar-hidden', !isSidebarVisible);
+    toggleButton.textContent = isSidebarVisible ? '✕' : '☰'; // Switch between close and menu icon
+});
+
+// Search functionality
 let newsIndex;
 let newsDocs = [];
 
