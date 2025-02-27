@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily News</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Custom styles for personal touch */
+        body {
+            font-family: 'Montserrat', sans-serif;
+        }
+        #date-list a {
+            transition: all 0.3s ease;
+        }
+        #date-list a:hover {
+            transform: scale(1.05);
+            color: #ef4444; /* Red accent */
+        }
+        #news-content {
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="flex flex-col md:flex-row h-screen">
+        <!-- Left Menu -->
+        <div class="w-full md:w-1/4 bg-gray-800 p-4 overflow-y-auto">
+            <h2 class="text-xl font-bold mb-4 text-red-500">Select Date</h2>
+            <ul id="date-list" class="space-y-2"></ul>
+        </div>
+        <!-- Right Content Area -->
+        <div class="w-full md:w-3/4 p-4 overflow-y-auto">
+            <div class="mb-4">
+                <input type="text" id="search-input" placeholder="Search news..." class="w-full p-2 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-red-500">
+            </div>
+            <div id="news-content" class="prose prose-invert max-w-none"></div>
+        </div>
+    </div>
+    <script src="https://unpkg.com/lunr/lunr.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
