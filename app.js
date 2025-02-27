@@ -1,25 +1,25 @@
-const dateList = document.getElementById('date-list');
-const newsContent = document.getElementById('news-content');
-const searchInput = document.getElementById('search-input');
+// Fetch available dates from JSON file
+fetch('available-dates.json')
+    .then(response => response.json())
+    .then(dates => {
+        const dateList = document.getElementById('date-list');
+        dates.forEach(date => {
+            const li = document.createElement('li');
+            li.innerHTML = `<a href="#" data-date="${date}" class="text-blue-400 hover:text-red-500">${date}</a>`;
+            dateList.appendChild(li);
+        });
 
-// Generate list of dates (last 30 days as an example)
-const dates = [];
-for (let i = 0; i < 30; i++) {
-    const date = new Date();
-    date.setDate(date.getDate() - i);
-    const dateString = date.toISOString().split('T')[0];
-    dates.push(dateString);
-}
-
-// Populate left menu
-dates.forEach(date => {
-    const li = document.createElement('li');
-    li.innerHTML = `<a href="#" data-date="${date}" class="text-blue-400 hover:text-red-500">${date}</a>`;
-    dateList.appendChild(li);
-});
+        // Load the most recent news by default
+        if (dates.length > 0) {
+            loadNews(dates[0]);
+        }
+    })
+    .catch(error => {
+        console.error('Error loading available dates:', error);
+    });
 
 // Load news content when a date is clicked
-dateList.addEventListener('click', (e) => {
+document.getElementById('date-list').addEventListener('click', (e) => {
     if (e.target.tagName === 'A') {
         const date = e.target.getAttribute('data-date');
         loadNews(date);
@@ -31,22 +31,20 @@ function loadNews(date) {
     fetch(`news/${date}.html`)
         .then(response => response.text())
         .then(html => {
-            newsContent.innerHTML = html;
+            document.getElementById('news-content').innerHTML = html;
         })
         .catch(() => {
-            newsContent.innerHTML = '<p class="text-gray-400">News not found for this date.</p>';
+            document.getElementById('news-content').innerHTML = '<p class="text-gray-400">News not found for this date.</p>';
         });
 }
 
-// Load the most recent news by default
-loadNews(dates[0]);
-
-// Search functionality with Lunr.js
+// Search functionality (assuming Lunr.js is already set up)
 let newsIndex;
 let newsDocs = [];
 
 async function loadAllNews() {
     newsDocs = [];
+    const dates = await fetch('available-dates.json').then(res => res.json());
     for (const date of dates) {
         try {
             const response = await fetch(`news/${date}.html`);
@@ -65,18 +63,18 @@ async function loadAllNews() {
 
 loadAllNews();
 
-searchInput.addEventListener('input', () => {
-    const query = searchInput.value;
+document.getElementById('search-input').addEventListener('input', () => {
+    const query = document.getElementById('search-input').value;
     if (query.length > 2) {
         const results = newsIndex.search(query);
         const matchingDates = results.map(result => result.ref);
-        dateList.querySelectorAll('a').forEach(a => {
+        document.querySelectorAll('#date-list a').forEach(a => {
             const date = a.getAttribute('data-date');
             a.classList.toggle('bg-red-500', matchingDates.includes(date));
             a.classList.toggle('text-white', matchingDates.includes(date));
         });
     } else {
-        dateList.querySelectorAll('a').forEach(a => {
+        document.querySelectorAll('#date-list a').forEach(a => {
             a.classList.remove('bg-red-500', 'text-white');
         });
     }
