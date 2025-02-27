@@ -1,99 +1,58 @@
-// Fetch available dates from JSON file
-fetch('available-dates.json')
-    .then(response => response.json())
-    .then(dates => {
-        const dateList = document.getElementById('date-list');
-        dates.forEach(date => {
-            const li = document.createElement('li');
-            li.innerHTML = `<a href="#" data-date="${date}" class="text-blue-400 hover:text-red-500">${date}</a>`;
-            dateList.appendChild(li);
-        });
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily News</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Montserrat', sans-serif; }
+        #date-list a { transition: all 0.3s ease; }
+        #date-list a:hover { transform: scale(1.05); color: #ef4444; }
+        #news-content { animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        #sidebar { transition: width 0.3s ease; }
+        .sidebar-hidden { width: 0 !important; overflow: hidden; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex flex-col min-h-screen">
+    <!-- Header -->
+    <header class="bg-gray-800 p-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-red-500">Daily News</h1>
+        <nav class="space-x-4 flex items-center">
+            <a href="#" class="text-blue-400 hover:text-blue-300">Home</a>
+            <a href="#" class="text-blue-400 hover:text-blue-300">About</a>
+            <a href="#" class="text-blue-400 hover:text-blue-300">Contact</a>
+            <button id="toggle-sidebar-desktop" class="hidden md:block text-white hover:text-red-500 focus:outline-none">☰</button>
+        </nav>
+    </header>
 
-        // Load the most recent news by default
-        if (dates.length > 0) {
-            loadNews(dates[0]);
-        }
-    })
-    .catch(error => {
-        console.error('Error loading available dates:', error);
-    });
+    <!-- Main Content -->
+    <div class="flex flex-col md:flex-row flex-grow">
+        <!-- Left Menu -->
+        <div id="sidebar" class="w-full md:w-1/6 bg-gray-800 p-4 overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-red-500">Select Date</h2>
+                <button id="toggle-sidebar" class="text-white md:hidden hover:text-red-500 focus:outline-none">✕</button>
+            </div>
+            <ul id="date-list" class="space-y-2"></ul>
+        </div>
+        <!-- Right Content Area -->
+        <div class="w-full md:w-5/6 p-4 overflow-y-auto flex flex-col">
+            <div class="mb-4">
+                <input type="text" id="search-input" placeholder="Search news..." class="w-full p-2 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-red-500">
+            </div>
+            <div id="news-content" class="prose prose-invert max-w-none flex-grow"></div>
+        </div>
+    </div>
 
-// Load news content when a date is clicked
-document.getElementById('date-list').addEventListener('click', (e) => {
-    const link = e.target.closest('a');
-    if (link) {
-        e.preventDefault();
-        const date = link.getAttribute('data-date');
-        loadNews(date);
-    }
-});
+    <!-- Footer -->
+    <footer class="bg-gray-800 p-4 text-center text-gray-400">
+        <p>© 2023 Daily News. All rights reserved.</p>
+        <p><a href="#" class="text-blue-400 hover:text-blue-300">Privacy Policy</a> | <a href="#" class="text-blue-400 hover:text-blue-300">Terms of Service</a></p>
+    </footer>
 
-// Function to load news content
-function loadNews(date) {
-    fetch(`news/${date}.html`)
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById('news-content').innerHTML = html;
-        })
-        .catch(() => {
-            document.getElementById('news-content').innerHTML = '<p class="text-gray-400">News not found for this date.</p>';
-        });
-}
-
-// Toggle sidebar visibility
-const sidebar = document.getElementById('sidebar');
-const toggleButtonMobile = document.getElementById('toggle-sidebar');
-const toggleButtonDesktop = document.getElementById('toggle-sidebar-desktop');
-let isSidebarVisible = true;
-
-function toggleSidebar() {
-    isSidebarVisible = !isSidebarVisible;
-    sidebar.classList.toggle('sidebar-hidden', !isSidebarVisible);
-    toggleButtonMobile.textContent = isSidebarVisible ? '✕' : '☰';
-    toggleButtonDesktop.textContent = isSidebarVisible ? '✕' : '☰';
-}
-
-toggleButtonMobile.addEventListener('click', toggleSidebar);
-toggleButtonDesktop.addEventListener('click', toggleSidebar);
-
-// Search functionality
-let newsIndex;
-let newsDocs = [];
-
-async function loadAllNews() {
-    newsDocs = [];
-    const dates = await fetch('available-dates.json').then(res => res.json());
-    for (const date of dates) {
-        try {
-            const response = await fetch(`news/${date}.html`);
-            const html = await response.text();
-            newsDocs.push({ date, content: html });
-        } catch (error) {
-            console.log(`No news for ${date}`);
-        }
-    }
-    newsIndex = lunr(function () {
-        this.ref('date');
-        this.field('content');
-        newsDocs.forEach(doc => this.add(doc));
-    });
-}
-
-loadAllNews();
-
-document.getElementById('search-input').addEventListener('input', () => {
-    const query = document.getElementById('search-input').value;
-    if (query.length > 2) {
-        const results = newsIndex.search(query);
-        const matchingDates = results.map(result => result.ref);
-        document.querySelectorAll('#date-list a').forEach(a => {
-            const date = a.getAttribute('data-date');
-            a.classList.toggle('bg-red-500', matchingDates.includes(date));
-            a.classList.toggle('text-white', matchingDates.includes(date));
-        });
-    } else {
-        document.querySelectorAll('#date-list a').forEach(a => {
-            a.classList.remove('bg-red-500', 'text-white');
-        });
-    }
-});
+    <script src="https://unpkg.com/lunr/lunr.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
