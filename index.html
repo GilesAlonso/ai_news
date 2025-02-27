@@ -11,9 +11,10 @@
         #date-list a:hover { transform: scale(1.05); color: #ef4444; }
         #news-content { animation: fadeIn 0.5s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        #sidebar { transition: all 0.3s ease; }
-        .sidebar-hidden-desktop { width: 0; overflow: hidden; }
+        #sidebar { transition: width 0.3s ease, max-height 0.3s ease; max-height: 100vh; }
+        .sidebar-hidden-desktop { width: 0; max-height: 0; overflow: hidden; padding: 0; }
         .sidebar-hidden-mobile { display: none; }
+        #toggle-sidebar { position: fixed; top: 80px; left: 10px; z-index: 10; }
     </style>
 </head>
 <body class="bg-gray-900 text-white flex flex-col min-h-screen">
@@ -29,12 +30,13 @@
     </header>
 
     <!-- Main Content -->
-    <div class="flex flex-col md:flex-row flex-grow">
+    <div class="flex flex-col md:flex-row flex-grow relative">
+        <!-- Mobile Toggle Button -->
+        <button id="toggle-sidebar" class="text-white md:hidden hover:text-red-500 focus:outline-none">✕</button>
         <!-- Left Menu -->
         <div id="sidebar" class="w-full md:w-1/6 bg-gray-800 p-4 overflow-y-auto">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-bold text-red-500">Select Date</h2>
-                <button id="toggle-sidebar" class="text-white md:hidden hover:text-red-500 focus:outline-none">✕</button>
             </div>
             <ul id="date-list" class="space-y-2"></ul>
         </div>
