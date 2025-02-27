@@ -22,7 +22,7 @@ fetch('available-dates.json')
 document.getElementById('date-list').addEventListener('click', (e) => {
     const link = e.target.closest('a');
     if (link) {
-        e.preventDefault(); // Prevent default anchor behavior
+        e.preventDefault();
         const date = link.getAttribute('data-date');
         loadNews(date);
     }
@@ -42,14 +42,19 @@ function loadNews(date) {
 
 // Toggle sidebar visibility
 const sidebar = document.getElementById('sidebar');
-const toggleButton = document.getElementById('toggle-sidebar');
+const toggleButtonMobile = document.getElementById('toggle-sidebar');
+const toggleButtonDesktop = document.getElementById('toggle-sidebar-desktop');
 let isSidebarVisible = true;
 
-toggleButton.addEventListener('click', () => {
+function toggleSidebar() {
     isSidebarVisible = !isSidebarVisible;
     sidebar.classList.toggle('sidebar-hidden', !isSidebarVisible);
-    toggleButton.textContent = isSidebarVisible ? '✕' : '☰'; // Switch between close and menu icon
-});
+    toggleButtonMobile.textContent = isSidebarVisible ? '✕' : '☰';
+    toggleButtonDesktop.textContent = isSidebarVisible ? '✕' : '☰';
+}
+
+toggleButtonMobile.addEventListener('click', toggleSidebar);
+toggleButtonDesktop.addEventListener('click', toggleSidebar);
 
 // Search functionality
 let newsIndex;
