@@ -48,7 +48,11 @@ let isSidebarVisible = true;
 
 function toggleSidebar() {
     isSidebarVisible = !isSidebarVisible;
-    sidebar.classList.toggle('sidebar-hidden', !isSidebarVisible);
+    if (window.innerWidth < 768) { // Mobile (below md breakpoint)
+        sidebar.classList.toggle('sidebar-hidden-mobile', !isSidebarVisible);
+    } else { // Desktop
+        sidebar.classList.toggle('sidebar-hidden-desktop', !isSidebarVisible);
+    }
     toggleButtonMobile.textContent = isSidebarVisible ? '✕' : '☰';
     toggleButtonDesktop.textContent = isSidebarVisible ? '✕' : '☰';
 }
