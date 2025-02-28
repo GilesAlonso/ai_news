@@ -11,33 +11,28 @@
         #date-list a:hover { transform: scale(1.05); color: #ef4444; }
         #news-content { animation: fadeIn 0.5s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        #sidebar { transition: width 0.3s ease, max-height 0.3s ease; max-height: 100vh; }
-        .sidebar-hidden-desktop { width: 0; max-height: 0; overflow: hidden; padding: 0; }
+        #sidebar { transition: all 0.3s ease; }
+        .sidebar-hidden-desktop { width: 0; overflow: hidden; padding: 0; }
         .sidebar-hidden-mobile { display: none; }
-        #toggle-sidebar { position: fixed; top: 80px; left: 10px; z-index: 10; }
     </style>
 </head>
 <body class="bg-gray-900 text-white flex flex-col min-h-screen">
     <!-- Header -->
-    <header class="bg-gray-800 p-4 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-red-500">Daily News</h1>
-        <nav class="space-x-4 flex items-center">
+    <header class="bg-gray-800 p-4 flex items-center space-x-4">
+        <button id="toggle-sidebar" class="text-white hover:text-red-500 focus:outline-none order-1">☰</button>
+        <h1 class="text-2xl font-bold text-red-500 order-2 flex-grow text-center md:text-left">Daily News</h1>
+        <nav class="space-x-4 flex items-center order-3">
             <a href="#" class="text-blue-400 hover:text-blue-300">Home</a>
             <a href="#" class="text-blue-400 hover:text-blue-300">About</a>
             <a href="#" class="text-blue-400 hover:text-blue-300">Contact</a>
-            <button id="toggle-sidebar-desktop" class="hidden md:block text-white hover:text-red-500 focus:outline-none">☰</button>
         </nav>
     </header>
 
     <!-- Main Content -->
-    <div class="flex flex-col md:flex-row flex-grow relative">
-        <!-- Mobile Toggle Button -->
-        <button id="toggle-sidebar" class="text-white md:hidden hover:text-red-500 focus:outline-none">✕</button>
+    <div class="flex flex-col md:flex-row flex-grow">
         <!-- Left Menu -->
         <div id="sidebar" class="w-full md:w-1/6 bg-gray-800 p-4 overflow-y-auto">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-red-500">Select Date</h2>
-            </div>
+            <h2 class="text-xl font-bold text-red-500 mb-4">Select Date</h2>
             <ul id="date-list" class="space-y-2"></ul>
         </div>
         <!-- Right Content Area -->
