@@ -42,23 +42,31 @@ function loadNews(date) {
 
 // Toggle sidebar visibility
 const sidebar = document.getElementById('sidebar');
-const toggleButtonMobile = document.getElementById('toggle-sidebar');
-const toggleButtonDesktop = document.getElementById('toggle-sidebar-desktop');
+const toggleButton = document.getElementById('toggle-sidebar');
 let isSidebarVisible = true;
 
 function toggleSidebar() {
     isSidebarVisible = !isSidebarVisible;
-    if (window.innerWidth < 768) { // Mobile (below md breakpoint)
+    if (window.innerWidth < 768) { // Mobile
         sidebar.classList.toggle('sidebar-hidden-mobile', !isSidebarVisible);
     } else { // Desktop
         sidebar.classList.toggle('sidebar-hidden-desktop', !isSidebarVisible);
     }
-    toggleButtonMobile.textContent = isSidebarVisible ? '✕' : '☰';
-    toggleButtonDesktop.textContent = isSidebarVisible ? '✕' : '☰';
+    toggleButton.textContent = isSidebarVisible ? '✕' : '☰';
 }
 
-toggleButtonMobile.addEventListener('click', toggleSidebar);
-toggleButtonDesktop.addEventListener('click', toggleSidebar);
+toggleButton.addEventListener('click', toggleSidebar);
+
+// Handle window resize to maintain consistency
+window.addEventListener('resize', () => {
+    if (window.innerWidth < 768 && !sidebar.classList.contains('sidebar-hidden-mobile')) {
+        sidebar.classList.remove('sidebar-hidden-desktop');
+        sidebar.classList.add('sidebar-hidden-mobile');
+    } else if (window.innerWidth >= 768 && !sidebar.classList.contains('sidebar-hidden-desktop')) {
+        sidebar.classList.remove('sidebar-hidden-mobile');
+        sidebar.classList.add('sidebar-hidden-desktop');
+    }
+});
 
 // Search functionality
 let newsIndex;
