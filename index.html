@@ -3,54 +3,482 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily News</title>
+    <title>Global News Digest | Controversial Topics & Analysis</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Montserrat', sans-serif; }
-        #date-list a { transition: all 0.3s ease; }
-        #date-list a:hover { transform: scale(1.05); color: #ef4444; }
-        #news-content { animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        #sidebar { transition: all 0.3s ease; }
-        .sidebar-hidden-desktop { width: 0; overflow: hidden; padding: 0; }
-        .sidebar-hidden-mobile { display: none; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .news-card {
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .news-card:hover {
+            transform: translateY(-2px);
+            border-left-color: #ef4444;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
+        }
+        
+        .date-item {
+            transition: all 0.2s ease;
+        }
+        
+        .date-item:hover {
+            transform: translateX(5px);
+            background: rgba(239, 68, 68, 0.1);
+        }
+        
+        .date-item.active {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .loading-spinner {
+            border: 3px solid rgba(239, 68, 68, 0.1);
+            border-top: 3px solid #ef4444;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 </head>
-<body class="bg-gray-900 text-white flex flex-col min-h-screen">
-    <!-- Header -->
-    <header class="bg-gray-800 p-4 flex items-center space-x-4">
-        <button id="toggle-sidebar" class="text-white hover:text-red-500 focus:outline-none order-1">☰</button>
-        <h1 class="text-2xl font-bold text-red-500 order-2 flex-grow text-center md:text-left">Daily News</h1>
-        <nav class="space-x-4 flex items-center order-3">
-            <a href="#" class="text-blue-400 hover:text-blue-300">Home</a>
-            <a href="#" class="text-blue-400 hover:text-blue-300">About</a>
-            <a href="#" class="text-blue-400 hover:text-blue-300">Contact</a>
-        </nav>
-    </header>
-
-    <!-- Main Content -->
-    <div class="flex flex-col md:flex-row flex-grow">
-        <!-- Left Menu -->
-        <div id="sidebar" class="w-full md:w-1/6 bg-gray-800 p-4 overflow-y-auto">
-            <h2 class="text-xl font-bold text-red-500 mb-4">Select Date</h2>
-            <ul id="date-list" class="space-y-2"></ul>
-        </div>
-        <!-- Right Content Area -->
-        <div class="w-full md:w-5/6 p-4 overflow-y-auto flex flex-col">
-            <div class="mb-4">
-                <input type="text" id="search-input" placeholder="Search news..." class="w-full p-2 bg-gray-700 text-white rounded focus:outline-none focus:ring-2 focus:ring-red-500">
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+    <!-- Header with improved navigation -->
+    <header class="bg-gray-800/80 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-700">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <button id="toggle-sidebar" class="md:hidden text-white hover:text-red-500 transition-colors">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <h1 class="text-2xl font-bold gradient-text">Global News Digest</h1>
             </div>
-            <div id="news-content" class="prose prose-invert max-w-none flex-grow"></div>
+            
+            <nav class="hidden md:flex items-center space-x-6">
+                <a href="#" class="text-gray-300 hover:text-red-500 transition-colors flex items-center">
+                    <i class="fas fa-home mr-2"></i>Home
+                </a>
+                <a href="#about" class="text-gray-300 hover:text-red-500 transition-colors flex items-center">
+                    <i class="fas fa-info-circle mr-2"></i>About
+                </a>
+                <a href="#" class="text-gray-300 hover:text-red-500 transition-colors flex items-center">
+                    <i class="fas fa-envelope mr-2"></i>Contact
+                </a>
+            </nav>
+            
+            <div class="flex items-center space-x-3">
+                <a href="https://twitter.com" target="_blank" class="text-gray-400 hover:text-blue-400 transition-colors" title="Follow on Twitter">
+                    <i class="fab fa-twitter text-xl"></i>
+                </a>
+                <a href="#" class="text-gray-400 hover:text-red-500 transition-colors" title="Subscribe">
+                    <i class="fas fa-bell text-xl"></i>
+                </a>
+            </div>
         </div>
+    </header>
+    
+    <!-- Main Content Area -->
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar - Date Navigation -->
+        <aside id="sidebar" class="w-full md:w-1/5 lg:w-1/6 bg-gray-800/50 backdrop-blur-sm border-r border-gray-700 overflow-y-auto scrollbar-hide transform transition-transform duration-300 -translate-x-full md:translate-x-0">
+            <div class="p-4">
+                <h2 class="text-lg font-semibold text-red-400 mb-4 flex items-center">
+                    <i class="fas fa-calendar-alt mr-2"></i>
+                    News Archives
+                </h2>
+                
+                <div class="mb-4 relative">
+                    <input type="text" id="search-input" placeholder="Search news..." 
+                           class="w-full bg-gray-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 pr-10">
+                    <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
+                </div>
+                
+                <div class="space-y-1" id="date-list">
+                    <!-- Dates will be loaded here -->
+                    <div class="text-center py-4">
+                        <div class="loading-spinner mx-auto"></div>
+                        <p class="text-gray-400 text-sm mt-2">Loading dates...</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto scrollbar-hide">
+            <div class="container mx-auto px-4 py-6">
+                <!-- Loading state -->
+                <div id="loading-state" class="text-center py-12">
+                    <div class="loading-spinner mx-auto mb-4"></div>
+                    <p class="text-gray-400">Loading news content...</p>
+                </div>
+                
+                <!-- News Content -->
+                <div id="news-content" class="hidden fade-in"></div>
+                
+                <!-- Error state -->
+                <div id="error-state" class="hidden text-center py-12">
+                    <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+                    <h3 class="text-xl font-semibold mb-2">News not found</h3>
+                    <p class="text-gray-400">The requested news content could not be loaded.</p>
+                </div>
+            </div>
+        </main>
     </div>
-
-    <!-- Footer -->
-    <footer class="bg-gray-800 p-4 text-center text-gray-400">
-        <p>© 2023 Daily News. All rights reserved.</p>
-        <p><a href="#" class="text-blue-400 hover:text-blue-300">Privacy Policy</a> | <a href="#" class="text-blue-400 hover:text-blue-300">Terms of Service</a></p>
+    
+    <!-- Footer with improved design -->
+    <footer class="bg-gray-800/80 backdrop-blur-sm border-t border-gray-700 py-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold gradient-text mb-4">Global News Digest</h3>
+                    <p class="text-gray-400 text-sm">Delivering controversial topics and analysis from around the world. Stay informed about the stories that matter.</p>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-white mb-3">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-red-500 transition-colors text-sm">Home</a></li>
+                        <li><a href="#about" class="text-gray-400 hover:text-red-500 transition-colors text-sm">About</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-red-500 transition-colors text-sm">Privacy Policy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-red-500 transition-colors text-sm">Terms of Service</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-white mb-3">Connect With Us</h4>
+                    <div class="flex space-x-4">
+                        <a href="https://twitter.com" target="_blank" class="text-gray-400 hover:text-blue-400 transition-colors" title="Twitter">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-red-500 transition-colors" title="RSS Feed">
+                            <i class="fas fa-rss text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-red-500 transition-colors" title="Email">
+                            <i class="fas fa-envelope text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center">
+                <p class="text-gray-400 text-sm">© 2023-2025 Global News Digest. All rights reserved.</p>
+                <p class="text-gray-500 text-xs mt-1">Automated news aggregation and analysis system</p>
+            </div>
+        </div>
     </footer>
-
+    
+    <!-- Enhanced JavaScript with better UX -->
     <script src="https://unpkg.com/lunr/lunr.js"></script>
-    <script src="app.js"></script>
+    <script>
+        // State management
+        const state = {
+            currentDate: null,
+            availableDates: [],
+            newsIndex: null,
+            newsDocs: [],
+            isLoading: true
+        };
+        
+        // DOM Elements
+        const elements = {
+            dateList: document.getElementById('date-list'),
+            newsContent: document.getElementById('news-content'),
+            loadingState: document.getElementById('loading-state'),
+            errorState: document.getElementById('error-state'),
+            searchInput: document.getElementById('search-input'),
+            sidebar: document.getElementById('sidebar'),
+            toggleButton: document.getElementById('toggle-sidebar')
+        };
+        
+        // Initialize the app
+        async function init() {
+            try {
+                await loadAvailableDates();
+                setupEventListeners();
+                
+                // Load most recent news by default
+                if (state.availableDates.length > 0) {
+                    await loadNews(state.availableDates[0]);
+                }
+                
+                // Load all news for search index
+                await loadAllNews();
+                
+            } catch (error) {
+                console.error('Initialization error:', error);
+                showError();
+            }
+        }
+        
+        // Load available dates
+        async function loadAvailableDates() {
+            const response = await fetch('available-dates.json');
+            state.availableDates = await response.json();
+            renderDateList();
+        }
+        
+        // Render date list with improved UI
+        function renderDateList() {
+            elements.dateList.innerHTML = '';
+            
+            if (state.availableDates.length === 0) {
+                elements.dateList.innerHTML = '<p class="text-gray-400 text-center py-4">No news available</p>';
+                return;
+            }
+            
+            state.availableDates.forEach(date => {
+                const dateItem = document.createElement('div');
+                dateItem.className = 'date-item p-2 rounded cursor-pointer transition-all';
+                dateItem.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium">${formatDate(date)}</span>
+                        <i class="fas fa-chevron-right text-xs opacity-0 transition-opacity"></i>
+                    </div>
+                `;
+                dateItem.setAttribute('data-date', date);
+                
+                dateItem.addEventListener('click', () => loadNews(date));
+                elements.dateList.appendChild(dateItem);
+            });
+        }
+        
+        // Format date for display
+        function formatDate(dateStr) {
+            const [year, month, day] = dateStr.split('-');
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return `${months[parseInt(month)-1]} ${parseInt(day)}, ${year}`;
+        }
+        
+        // Load news content with error handling
+        async function loadNews(date) {
+            if (state.currentDate === date) return;
+            
+            state.isLoading = true;
+            state.currentDate = date;
+            
+            // Update UI state
+            elements.newsContent.classList.add('hidden');
+            elements.loadingState.classList.remove('hidden');
+            elements.errorState.classList.add('hidden');
+            
+            // Update active date in sidebar
+            document.querySelectorAll('.date-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-date') === date) {
+                    item.classList.add('active');
+                }
+            });
+            
+            try {
+                const response = await fetch(`news/${date}.html`);
+                if (!response.ok) throw new Error('News not found');
+                
+                const html = await response.text();
+                elements.newsContent.innerHTML = html;
+                
+                // Add social sharing buttons to each news item
+                addSocialSharingButtons();
+                
+                // Show content with fade-in animation
+                elements.newsContent.classList.remove('hidden');
+                elements.loadingState.classList.add('hidden');
+                
+            } catch (error) {
+                console.error('Error loading news:', error);
+                showError();
+            } finally {
+                state.isLoading = false;
+            }
+        }
+        
+        // Add social sharing buttons
+        function addSocialSharingButtons() {
+            const shareButtonHTML = `
+                <div class="mt-4 flex items-center space-x-3">
+                    <button class="share-twitter bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm transition-colors" 
+                            data-date="${state.currentDate}">
+                        <i class="fab fa-twitter mr-1"></i> Share
+                    </button>
+                    <button class="share-link bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-sm transition-colors">
+                        <i class="fas fa-link mr-1"></i> Copy Link
+                    </button>
+                </div>
+            `;
+            
+            // Add to main title section
+            const titleElement = elements.newsContent.querySelector('h1');
+            if (titleElement) {
+                const shareContainer = document.createElement('div');
+                shareContainer.className = 'flex justify-end mt-2';
+                shareContainer.innerHTML = shareButtonHTML;
+                titleElement.parentNode.insertBefore(shareContainer, titleElement.nextSibling);
+            }
+            
+            // Set up event listeners for sharing
+            document.querySelectorAll('.share-twitter').forEach(button => {
+                button.addEventListener('click', () => shareOnTwitter(state.currentDate));
+            });
+            
+            document.querySelectorAll('.share-link').forEach(button => {
+                button.addEventListener('click', () => copyNewsLink(state.currentDate));
+            });
+        }
+        
+        // Share on Twitter
+        function shareOnTwitter(date) {
+            const title = encodeURIComponent(document.querySelector('h1')?.textContent || 'Global News Digest');
+            const url = encodeURIComponent(window.location.href);
+            const hashtags = 'WorldNews,BrazilNews,USNews,ControversialTopics';
+            
+            window.open(
+                `https://twitter.com/intent/tweet?text=${title}&url=${url}&hashtags=${hashtags}`,
+                'twitter-share',
+                'width=550,height=420'
+            );
+        }
+        
+        // Copy news link
+        function copyNewsLink(date) {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('News link copied to clipboard!');
+            });
+        }
+        
+        // Load all news for search index
+        async function loadAllNews() {
+            state.newsDocs = [];
+            
+            for (const date of state.availableDates) {
+                try {
+                    const response = await fetch(`news/${date}.html`);
+                    const html = await response.text();
+                    state.newsDocs.push({ date, content: html });
+                } catch (error) {
+                    console.log(`No news for ${date}`);
+                }
+            }
+            
+            // Build search index
+            state.newsIndex = lunr(function () {
+                this.ref('date');
+                this.field('content');
+                state.newsDocs.forEach(doc => this.add(doc));
+            });
+        }
+        
+        // Search functionality with visual feedback
+        function setupSearch() {
+            elements.searchInput.addEventListener('input', () => {
+                const query = elements.searchInput.value.trim();
+                
+                if (query.length < 2) {
+                    // Reset highlighting
+                    document.querySelectorAll('.date-item').forEach(item => {
+                        item.classList.remove('bg-red-500', 'text-white');
+                    });
+                    return;
+                }
+                
+                if (!state.newsIndex) return;
+                
+                const results = state.newsIndex.search(query);
+                const matchingDates = results.map(result => result.ref);
+                
+                document.querySelectorAll('.date-item').forEach(item => {
+                    const date = item.getAttribute('data-date');
+                    if (matchingDates.includes(date)) {
+                        item.classList.add('bg-red-500', 'text-white');
+                    } else {
+                        item.classList.remove('bg-red-500', 'text-white');
+                    }
+                });
+            });
+        }
+        
+        // Sidebar toggle functionality
+        function setupSidebarToggle() {
+            let isSidebarVisible = false;
+            
+            elements.toggleButton.addEventListener('click', () => {
+                isSidebarVisible = !isSidebarVisible;
+                elements.sidebar.classList.toggle('-translate-x-full', !isSidebarVisible);
+                elements.toggleButton.innerHTML = isSidebarVisible 
+                    ? '<i class="fas fa-times text-xl"></i>'
+                    : '<i class="fas fa-bars text-xl"></i>';
+            });
+            
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth < 768 && 
+                    isSidebarVisible && 
+                    !elements.sidebar.contains(e.target) && 
+                    e.target !== elements.toggleButton) {
+                    isSidebarVisible = false;
+                    elements.sidebar.classList.add('-translate-x-full');
+                    elements.toggleButton.innerHTML = '<i class="fas fa-bars text-xl"></i>';
+                }
+            });
+        }
+        
+        // Show error state
+        function showError() {
+            elements.newsContent.classList.add('hidden');
+            elements.loadingState.classList.add('hidden');
+            elements.errorState.classList.remove('hidden');
+        }
+        
+        // Setup all event listeners
+        function setupEventListeners() {
+            setupSearch();
+            setupSidebarToggle();
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 768) {
+                    // Show sidebar on desktop
+                    elements.sidebar.classList.remove('-translate-x-full');
+                }
+            });
+        }
+        
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
 </body>
 </html>
