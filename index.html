@@ -150,6 +150,36 @@
                 <!-- News Content -->
                 <div id="news-content" class="hidden fade-in"></div>
                 
+                <!-- About Section -->
+                <section id="about" class="hidden mt-12 bg-gray-800/50 rounded-lg p-6 border border-gray-700">
+                    <h2 class="text-2xl font-bold gradient-text mb-4">About This Project</h2>
+                    <p class="text-gray-300 mb-4">
+                        The <strong>AI-Generated News Portal</strong> is an automated news aggregation system that analyzes controversial topics from X (Twitter) and generates comprehensive summaries using advanced AI algorithms.
+                    </p>
+                    <p class="text-gray-300 mb-4">
+                        This project demonstrates modern web development techniques, AI content generation, and automated data processing. It's part of my portfolio showcasing full-stack development and AI integration capabilities.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 mt-6">
+                        <a href="https://giles.vercel.app/" target="_blank" rel="noopener noreferrer" 
+                           class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors inline-flex items-center justify-center">
+                            <i class="fas fa-user-tie mr-2"></i>
+                            Visit Developer Portfolio
+                        </a>
+                        <a href="https://github.com/gilesalonso/ai-news" target="_blank" rel="noopener noreferrer" 
+                           class="border border-gray-600 hover:border-red-500 text-gray-300 hover:text-white px-6 py-2 rounded-lg transition-colors inline-flex items-center justify-center">
+                            <i class="fab fa-github mr-2"></i>
+                            View Source Code
+                        </a>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-gray-700">
+                        <h3 class="text-lg font-semibold text-white mb-2">Developer Information</h3>
+                        <p class="text-gray-400">
+                            <strong>Giles Alonso</strong> - Developer & Consultant<br>
+                            Specializing in healthcare tech, automation, and AI integration.<n>
+                        </p>
+                    </div>
+                </section>
+                
                 <!-- Error state -->
                 <div id="error-state" class="hidden text-center py-12">
                     <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
@@ -191,6 +221,9 @@
                         <a href="#" class="text-gray-400 hover:text-red-500 transition-colors" title="Email">
                             <i class="fas fa-envelope text-xl"></i>
                         </a>
+                        <a href="https://giles.vercel.app/" target="_blank" class="text-gray-400 hover:text-red-500 transition-colors" title="Developer Portfolio">
+                            <i class="fas fa-user-tie text-xl"></i>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -198,6 +231,12 @@
             <div class="border-t border-gray-700 mt-8 pt-6 text-center">
                 <p class="text-gray-400 text-sm">© 2023-2025 Global News Digest. All rights reserved.</p>
                 <p class="text-gray-500 text-xs mt-1">Automated news aggregation and analysis system</p>
+                <p class="text-gray-500 text-xs mt-2">
+                    <a href="https://giles.vercel.app/" target="_blank" rel="noopener noreferrer" 
+                       class="text-gray-400 hover:text-red-500 transition-colors">
+                        Part of Giles Alonso's Portfolio
+                    </a>
+                </p>
             </div>
         </div>
     </footer>
@@ -220,6 +259,7 @@
             newsContent: document.getElementById('news-content'),
             loadingState: document.getElementById('loading-state'),
             errorState: document.getElementById('error-state'),
+            aboutSection: document.getElementById('about'),
             searchInput: document.getElementById('search-input'),
             sidebar: document.getElementById('sidebar'),
             toggleButton: document.getElementById('toggle-sidebar')
@@ -467,12 +507,50 @@
         function setupEventListeners() {
             setupSearch();
             setupSidebarToggle();
+            setupAboutSection();
             
             // Handle window resize
             window.addEventListener('resize', () => {
                 if (window.innerWidth >= 768) {
                     // Show sidebar on desktop
                     elements.sidebar.classList.remove('-translate-x-full');
+                }
+            });
+        }
+        
+        function setupAboutSection() {
+            // Handle About link clicks
+            const aboutLinks = document.querySelectorAll('a[href="#about"]');
+            aboutLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    // Hide news content and show about section
+                    elements.newsContent.classList.add('hidden');
+                    elements.aboutSection.classList.remove('hidden');
+                    elements.aboutSection.classList.add('fade-in');
+                    
+                    // Scroll to about section
+                    elements.aboutSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+            });
+            
+            // Handle Home link clicks (if any)
+            const homeLinks = document.querySelectorAll('a[href="#"]:not([title]):not([target])');
+            homeLinks.forEach(link => {
+                if (link.textContent.includes('Home')) {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        
+                        // Show news content and hide about section
+                        elements.aboutSection.classList.add('hidden');
+                        elements.aboutSection.classList.remove('fade-in');
+                        
+                        // Reload the current news
+                        if (state.currentDate) {
+                            loadNews(state.currentDate);
+                        }
+                    });
                 }
             });
         }
