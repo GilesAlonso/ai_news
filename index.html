@@ -76,6 +76,89 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+        
+        /* Mobile-specific styles */
+        @media (max-width: 767px) {
+            .mobile-sidebar-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.7);
+                z-index: 30;
+                display: none;
+                backdrop-filter: blur(2px);
+            }
+            
+            .mobile-sidebar-overlay.active {
+                display: block;
+            }
+            
+            /* Make content more readable on mobile */
+            .prose :is(h1, h2, h3, h4, h5, h6) {
+                font-size: 1.3em !important;
+                line-height: 1.5 !important;
+                margin-bottom: 0.75rem !important;
+            }
+            
+            /* Better spacing for mobile */
+            .prose ul, .prose ol {
+                padding-left: 1rem !important;
+            }
+            
+            .prose li {
+                margin-bottom: 0.75rem !important;
+            }
+            
+            /* Larger touch targets */
+            .date-item {
+                padding: 0.75rem 1rem !important;
+                min-height: 50px;
+            }
+            
+            /* Better mobile navigation */
+            .nav-mobile {
+                display: flex !important;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            /* Mobile header adjustments */
+            header {
+                padding: 0.5rem 1rem !important;
+            }
+            
+            /* Better button sizes for touch */
+            button, [type="button"], [type="submit"] {
+                min-height: 44px !important;
+                min-width: 44px !important;
+            }
+            
+            /* Improve input field sizing */
+            input[type="text"], input[type="search"] {
+                min-height: 44px !important;
+                font-size: 1rem !important;
+            }
+            
+            /* Better spacing in main content */
+            main {
+                padding: 1rem !important;
+            }
+            
+            /* Make sidebar wider on mobile when open */
+            #sidebar {
+                width: 80% !important;
+                max-width: 300px !important;
+            }
+        }
+        
+        /* Tablet-specific adjustments */
+        @media (min-width: 768px) and (max-width: 1023px) {
+            .prose :is(h1, h2, h3, h4, h5, h6) {
+                font-size: 1.1em !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex flex-col">
@@ -89,14 +172,14 @@
                 <h1 class="text-2xl font-bold gradient-text">Global News Digest</h1>
             </div>
             
-            <nav class="hidden md:flex items-center space-x-6">
-                <a href="#" class="text-gray-300 hover:text-red-500 transition-colors flex items-center">
+            <nav class="hidden md:flex items-center space-x-6 nav-mobile">
+                <a href="#" class="text-gray-300 hover:text-red-500 transition-colors flex items-center py-2 px-3 rounded">
                     <i class="fas fa-home mr-2"></i>Home
                 </a>
-                <a href="#about" class="text-gray-300 hover:text-red-500 transition-colors flex items-center">
+                <a href="#about" class="text-gray-300 hover:text-red-500 transition-colors flex items-center py-2 px-3 rounded">
                     <i class="fas fa-info-circle mr-2"></i>About
                 </a>
-                <a href="#" class="text-gray-300 hover:text-red-500 transition-colors flex items-center">
+                <a href="#" class="text-gray-300 hover:text-red-500 transition-colors flex items-center py-2 px-3 rounded">
                     <i class="fas fa-envelope mr-2"></i>Contact
                 </a>
             </nav>
@@ -114,8 +197,10 @@
     
     <!-- Main Content Area -->
     <div class="flex flex-1 overflow-hidden">
+        <!-- Mobile Sidebar Overlay -->
+        <div id="mobile-overlay" class="mobile-sidebar-overlay"></div>
         <!-- Sidebar - Date Navigation -->
-        <aside id="sidebar" class="w-full md:w-1/5 lg:w-1/6 bg-gray-800/50 backdrop-blur-sm border-r border-gray-700 overflow-y-auto scrollbar-hide transform transition-transform duration-300 -translate-x-full md:translate-x-0">
+        <aside id="sidebar" class="w-full md:w-1/5 lg:w-1/6 bg-gray-800/50 backdrop-blur-sm border-r border-gray-700 overflow-y-auto scrollbar-hide transform transition-transform duration-300 -translate-x-full md:translate-x-0 fixed md:relative z-40 h-full">
             <div class="p-4">
                 <h2 class="text-lg font-semibold text-red-400 mb-4 flex items-center">
                     <i class="fas fa-calendar-alt mr-2"></i>
@@ -139,7 +224,7 @@
         </aside>
         
         <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto scrollbar-hide">
+        <main class="flex-1 overflow-y-auto scrollbar-hide md:ml-0 ml-0">
             <div class="container mx-auto px-4 py-6">
                 <!-- Loading state -->
                 <div id="loading-state" class="text-center py-12">
@@ -149,36 +234,6 @@
                 
                 <!-- News Content -->
                 <div id="news-content" class="hidden fade-in"></div>
-                
-                <!-- About Section -->
-                <section id="about" class="hidden mt-12 bg-gray-800/50 rounded-lg p-6 border border-gray-700">
-                    <h2 class="text-2xl font-bold gradient-text mb-4">About This Project</h2>
-                    <p class="text-gray-300 mb-4">
-                        The <strong>AI-Generated News Portal</strong> is an automated news aggregation system that analyzes controversial topics from X (Twitter) and generates comprehensive summaries using advanced AI algorithms.
-                    </p>
-                    <p class="text-gray-300 mb-4">
-                        This project demonstrates modern web development techniques, AI content generation, and automated data processing. It's part of my portfolio showcasing full-stack development and AI integration capabilities.
-                    </p>
-                    <div class="flex flex-col sm:flex-row gap-4 mt-6">
-                        <a href="https://giles.vercel.app/" target="_blank" rel="noopener noreferrer" 
-                           class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors inline-flex items-center justify-center">
-                            <i class="fas fa-user-tie mr-2"></i>
-                            Visit Developer Portfolio
-                        </a>
-                        <a href="https://github.com/gilesalonso/ai-news" target="_blank" rel="noopener noreferrer" 
-                           class="border border-gray-600 hover:border-red-500 text-gray-300 hover:text-white px-6 py-2 rounded-lg transition-colors inline-flex items-center justify-center">
-                            <i class="fab fa-github mr-2"></i>
-                            View Source Code
-                        </a>
-                    </div>
-                    <div class="mt-6 pt-4 border-t border-gray-700">
-                        <h3 class="text-lg font-semibold text-white mb-2">Developer Information</h3>
-                        <p class="text-gray-400">
-                            <strong>Giles Alonso</strong> - Developer & Consultant<br>
-                            Specializing in healthcare tech, automation, and AI integration.<n>
-                        </p>
-                    </div>
-                </section>
                 
                 <!-- Error state -->
                 <div id="error-state" class="hidden text-center py-12">
@@ -221,9 +276,6 @@
                         <a href="#" class="text-gray-400 hover:text-red-500 transition-colors" title="Email">
                             <i class="fas fa-envelope text-xl"></i>
                         </a>
-                        <a href="https://giles.vercel.app/" target="_blank" class="text-gray-400 hover:text-red-500 transition-colors" title="Developer Portfolio">
-                            <i class="fas fa-user-tie text-xl"></i>
-                        </a>
                     </div>
                 </div>
             </div>
@@ -231,12 +283,6 @@
             <div class="border-t border-gray-700 mt-8 pt-6 text-center">
                 <p class="text-gray-400 text-sm">© 2023-2025 Global News Digest. All rights reserved.</p>
                 <p class="text-gray-500 text-xs mt-1">Automated news aggregation and analysis system</p>
-                <p class="text-gray-500 text-xs mt-2">
-                    <a href="https://giles.vercel.app/" target="_blank" rel="noopener noreferrer" 
-                       class="text-gray-400 hover:text-red-500 transition-colors">
-                        Part of Giles Alonso's Portfolio
-                    </a>
-                </p>
             </div>
         </div>
     </footer>
@@ -259,7 +305,6 @@
             newsContent: document.getElementById('news-content'),
             loadingState: document.getElementById('loading-state'),
             errorState: document.getElementById('error-state'),
-            aboutSection: document.getElementById('about'),
             searchInput: document.getElementById('search-input'),
             sidebar: document.getElementById('sidebar'),
             toggleButton: document.getElementById('toggle-sidebar')
@@ -303,16 +348,28 @@
             
             state.availableDates.forEach(date => {
                 const dateItem = document.createElement('div');
-                dateItem.className = 'date-item p-2 rounded cursor-pointer transition-all';
+                dateItem.className = 'date-item p-3 rounded-lg cursor-pointer transition-all hover:bg-gray-700';
                 dateItem.innerHTML = `
                     <div class="flex items-center justify-between">
-                        <span class="text-sm font-medium">${formatDate(date)}</span>
-                        <i class="fas fa-chevron-right text-xs opacity-0 transition-opacity"></i>
+                        <span class="text-base font-medium">${formatDate(date)}</span>
+                        <i class="fas fa-chevron-right text-sm opacity-0 transition-opacity"></i>
                     </div>
                 `;
                 dateItem.setAttribute('data-date', date);
                 
                 dateItem.addEventListener('click', () => loadNews(date));
+                
+                // Add touch feedback for mobile
+                dateItem.addEventListener('touchstart', () => {
+                    dateItem.classList.add('bg-gray-600');
+                });
+                
+                dateItem.addEventListener('touchend', () => {
+                    setTimeout(() => {
+                        dateItem.classList.remove('bg-gray-600');
+                    }, 100);
+                });
+                
                 elements.dateList.appendChild(dateItem);
             });
         }
@@ -474,6 +531,7 @@
         // Sidebar toggle functionality
         function setupSidebarToggle() {
             let isSidebarVisible = false;
+            const mobileOverlay = document.getElementById('mobile-overlay');
             
             elements.toggleButton.addEventListener('click', () => {
                 isSidebarVisible = !isSidebarVisible;
@@ -481,6 +539,28 @@
                 elements.toggleButton.innerHTML = isSidebarVisible 
                     ? '<i class="fas fa-times text-xl"></i>'
                     : '<i class="fas fa-bars text-xl"></i>';
+                
+                // Handle mobile overlay
+                if (window.innerWidth < 768) {
+                    if (isSidebarVisible) {
+                        mobileOverlay.classList.add('active');
+                        document.body.style.overflow = 'hidden';
+                    } else {
+                        mobileOverlay.classList.remove('active');
+                        document.body.style.overflow = '';
+                    }
+                }
+            });
+            
+            // Close sidebar when clicking overlay
+            mobileOverlay.addEventListener('click', () => {
+                if (isSidebarVisible) {
+                    isSidebarVisible = false;
+                    elements.sidebar.classList.add('-translate-x-full');
+                    elements.toggleButton.innerHTML = '<i class="fas fa-bars text-xl"></i>';
+                    mobileOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
             });
             
             // Close sidebar when clicking outside on mobile
@@ -488,10 +568,13 @@
                 if (window.innerWidth < 768 && 
                     isSidebarVisible && 
                     !elements.sidebar.contains(e.target) && 
-                    e.target !== elements.toggleButton) {
+                    e.target !== elements.toggleButton &&
+                    e.target !== mobileOverlay) {
                     isSidebarVisible = false;
                     elements.sidebar.classList.add('-translate-x-full');
                     elements.toggleButton.innerHTML = '<i class="fas fa-bars text-xl"></i>';
+                    mobileOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
                 }
             });
         }
@@ -507,52 +590,70 @@
         function setupEventListeners() {
             setupSearch();
             setupSidebarToggle();
-            setupAboutSection();
             
             // Handle window resize
             window.addEventListener('resize', () => {
                 if (window.innerWidth >= 768) {
                     // Show sidebar on desktop
                     elements.sidebar.classList.remove('-translate-x-full');
+                    document.getElementById('mobile-overlay').classList.remove('active');
+                    document.body.style.overflow = '';
                 }
-            });
-        }
-        
-        function setupAboutSection() {
-            // Handle About link clicks
-            const aboutLinks = document.querySelectorAll('a[href="#about"]');
-            aboutLinks.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    
-                    // Hide news content and show about section
-                    elements.newsContent.classList.add('hidden');
-                    elements.aboutSection.classList.remove('hidden');
-                    elements.aboutSection.classList.add('fade-in');
-                    
-                    // Scroll to about section
-                    elements.aboutSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                });
             });
             
-            // Handle Home link clicks (if any)
-            const homeLinks = document.querySelectorAll('a[href="#"]:not([title]):not([target])');
-            homeLinks.forEach(link => {
-                if (link.textContent.includes('Home')) {
-                    link.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        
-                        // Show news content and hide about section
-                        elements.aboutSection.classList.add('hidden');
-                        elements.aboutSection.classList.remove('fade-in');
-                        
-                        // Reload the current news
-                        if (state.currentDate) {
-                            loadNews(state.currentDate);
-                        }
-                    });
+            // Add mobile-specific touch optimizations
+            setupMobileOptimizations();
+        }
+        
+        // Mobile-specific optimizations
+        function setupMobileOptimizations() {
+            // Add touch-friendly hover effects
+            document.addEventListener('touchstart', function() {}, {passive: true});
+            
+            // Improve scroll performance on mobile
+            document.addEventListener('scroll', function() {
+                if (window.innerWidth < 768) {
+                    // Reduce scroll event frequency for better performance
+                    if (this.lastScroll && Date.now() - this.lastScroll < 100) return;
+                    this.lastScroll = Date.now();
                 }
-            });
+            }, {passive: true});
+            
+            // Add swipe gestures for sidebar (optional enhancement)
+            let touchStartX = 0;
+            let touchStartY = 0;
+            
+            document.addEventListener('touchstart', (e) => {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }, {passive: true});
+            
+            document.addEventListener('touchend', (e) => {
+                if (!touchStartX) return;
+                
+                const touchEndX = e.changedTouches[0].clientX;
+                const touchEndY = e.changedTouches[0].clientY;
+                const diffX = touchStartX - touchEndX;
+                const diffY = touchStartY - touchEndY;
+                
+                // Only consider horizontal swipes
+                if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                    if (diffX > 0) {
+                        // Left swipe - could open sidebar
+                        // For now, just close if open
+                        const sidebar = document.getElementById('sidebar');
+                        if (!sidebar.classList.contains('-translate-x-full')) {
+                            sidebar.classList.add('-translate-x-full');
+                            document.getElementById('mobile-overlay').classList.remove('active');
+                            document.body.style.overflow = '';
+                            document.getElementById('toggle-sidebar').innerHTML = '<i class="fas fa-bars text-xl"></i>';
+                        }
+                    }
+                }
+                
+                touchStartX = 0;
+                touchStartY = 0;
+            }, {passive: true});
         }
         
         // Initialize the app when DOM is loaded
