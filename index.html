@@ -13,6 +13,14 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/my-favicon/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-title" content="AI-News" />
     <link rel="manifest" href="/my-favicon/site.webmanifest" />
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-CHVQS19HP1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-CHVQS19HP1');
+    </script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -215,13 +223,13 @@
                 <a href="#about" class="text-gray-300 hover:text-red-500 transition-colors flex items-center py-2 px-3 rounded">
                     <i class="fas fa-info-circle mr-2"></i>About
                 </a>
-                <a href="mailto:giles.g.alonso@gmail.com" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-red-500 transition-colors flex items-center py-2 px-3 rounded">
+                <a href="mailto:giles.g.alonso@gmail.com" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-red-500 transition-colors flex items-center py-2 px-3 rounded" data-portfolio-link="email">
                     <i class="fas fa-envelope mr-2"></i>Email
                 </a>
             </nav>
             
             <div class="flex items-center space-x-3">
-                <a href="https://linkedin.com/in/gilesalonso" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-red-500 transition-colors" title="Connect on LinkedIn">
+                <a href="https://linkedin.com/in/gilesalonso" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-red-500 transition-colors" title="Connect on LinkedIn" data-portfolio-link="linkedin">
                     <i class="fab fa-linkedin text-xl"></i>
                 </a>
             </div>
@@ -295,8 +303,8 @@
                     <ul class="space-y-2">
                         <li><a href="#" class="text-gray-400 hover:text-red-500 transition-colors text-sm">Home</a></li>
                         <li><a href="#about" class="text-gray-400 hover:text-red-500 transition-colors text-sm">About</a></li>
-                        <li><a href="https://giles.vercel.app/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-red-500 transition-colors text-sm">Developer Portfolio</a></li>
-                        <li><a href="https://solvethis.qzz.io/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-red-500 transition-colors text-sm">Portfolio Hub</a></li>
+                        <li><a href="https://giles.vercel.app/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-red-500 transition-colors text-sm" data-portfolio-link="portfolio">Developer Portfolio</a></li>
+                        <li><a href="https://solvethis.qzz.io/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-red-500 transition-colors text-sm" data-portfolio-link="hub">Portfolio Hub</a></li>
                         <li><a href="#privacy" class="text-gray-400 hover:text-red-500 transition-colors text-sm">Privacy Policy</a></li>
                         <li><a href="#terms" class="text-gray-400 hover:text-red-500 transition-colors text-sm">Terms of Service</a></li>
                     </ul>
@@ -305,18 +313,18 @@
                 <div>
                     <h4 class="font-semibold text-white mb-3">Connect With Us</h4>
                     <div class="flex flex-wrap items-center gap-4">
-                        <a href="https://linkedin.com/in/gilesalonso" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-red-500 transition-colors" title="LinkedIn">
-                            <i class="fab fa-linkedin text-xl"></i>
-                        </a>
-                        <a href="mailto:giles.g.alonso@gmail.com" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-red-500 transition-colors" title="Email">
-                            <i class="fas fa-envelope text-xl"></i>
-                        </a>
-                        <a href="https://solvethis.qzz.io/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-red-500 transition-colors" title="Portfolio Hub">
-                            <i class="fas fa-globe text-xl"></i>
-                        </a>
-                        <a href="https://giles.vercel.app/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-red-500 transition-colors" title="Developer Portfolio">
-                            <i class="fas fa-briefcase text-xl"></i>
-                        </a>
+                       <a href="https://linkedin.com/in/gilesalonso" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-red-500 transition-colors" title="LinkedIn" data-portfolio-link="linkedin">
+                           <i class="fab fa-linkedin text-xl"></i>
+                       </a>
+                       <a href="mailto:giles.g.alonso@gmail.com" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-red-500 transition-colors" title="Email" data-portfolio-link="email">
+                           <i class="fas fa-envelope text-xl"></i>
+                       </a>
+                       <a href="https://solvethis.qzz.io/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-red-500 transition-colors" title="Portfolio Hub" data-portfolio-link="hub">
+                           <i class="fas fa-globe text-xl"></i>
+                       </a>
+                       <a href="https://giles.vercel.app/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-red-500 transition-colors" title="Developer Portfolio" data-portfolio-link="portfolio">
+                           <i class="fas fa-briefcase text-xl"></i>
+                       </a>
                     </div>
                 </div>
             </div>
@@ -659,13 +667,19 @@
                 // Show content with fade-in animation
                 elements.newsContent.classList.remove('hidden');
                 elements.loadingState.classList.add('hidden');
-                
-            } catch (error) {
+
+                // Track page view in GA4
+                gtag('event', 'page_view', {
+                   page_path: `/news/${date}`,
+                   page_title: `Global News Digest - ${formatDate(date)}`
+                });
+
+                } catch (error) {
                 console.error('Error loading news:', error);
                 showError();
-            } finally {
+                } finally {
                 state.isLoading = false;
-            }
+                }
         }
         
         // Initialize Giscus comments
@@ -677,6 +691,11 @@
             
             // Show the container
             giscusContainer.classList.remove('hidden');
+            
+            // Track Giscus load event in GA4
+            gtag('event', 'giscus_loaded', {
+                news_date: date
+            });
             
             // Create Giscus script element with dynamic date-based discussions
             const script = document.createElement('script');
@@ -779,31 +798,36 @@
         
         // Search functionality with visual feedback
         function setupSearch() {
-            elements.searchInput.addEventListener('input', () => {
-                const query = elements.searchInput.value.trim();
-                
-                if (query.length < 2) {
-                    // Reset highlighting
-                    document.querySelectorAll('.date-item').forEach(item => {
-                        item.classList.remove('bg-red-500', 'text-white');
-                    });
-                    return;
-                }
-                
-                if (!state.newsIndex) return;
-                
-                const results = state.newsIndex.search(query);
-                const matchingDates = results.map(result => result.ref);
-                
-                document.querySelectorAll('.date-item').forEach(item => {
-                    const date = item.getAttribute('data-date');
-                    if (matchingDates.includes(date)) {
-                        item.classList.add('bg-red-500', 'text-white');
-                    } else {
-                        item.classList.remove('bg-red-500', 'text-white');
-                    }
-                });
-            });
+           elements.searchInput.addEventListener('input', () => {
+               const query = elements.searchInput.value.trim();
+
+               if (query.length < 2) {
+                   // Reset highlighting
+                   document.querySelectorAll('.date-item').forEach(item => {
+                       item.classList.remove('bg-red-500', 'text-white');
+                   });
+                   return;
+               }
+
+               // Track search event in GA4
+               gtag('event', 'search_news', {
+                   search_term: query
+               });
+
+               if (!state.newsIndex) return;
+
+               const results = state.newsIndex.search(query);
+               const matchingDates = results.map(result => result.ref);
+
+               document.querySelectorAll('.date-item').forEach(item => {
+                   const date = item.getAttribute('data-date');
+                   if (matchingDates.includes(date)) {
+                       item.classList.add('bg-red-500', 'text-white');
+                   } else {
+                       item.classList.remove('bg-red-500', 'text-white');
+                   }
+               });
+           });
         }
         
         // Sidebar toggle functionality
@@ -867,21 +891,32 @@
         
         // Setup all event listeners
         function setupEventListeners() {
-            setupSearch();
-            setupSidebarToggle();
-            
-            // Handle window resize
-            window.addEventListener('resize', () => {
-                if (window.innerWidth >= 768) {
-                    // Show sidebar on desktop
-                    elements.sidebar.classList.remove('-translate-x-full');
-                    document.getElementById('mobile-overlay').classList.remove('active');
-                    document.body.style.overflow = '';
-                }
-            });
-            
-            // Add mobile-specific touch optimizations
-            setupMobileOptimizations();
+           setupSearch();
+           setupSidebarToggle();
+
+           // Track portfolio link clicks
+           document.addEventListener('click', function(e) {
+               if (e.target.closest('a[data-portfolio-link]')) {
+                   const link = e.target.closest('a[data-portfolio-link]');
+                   gtag('event', 'portfolio_click', {
+                       portfolio_url: link.href,
+                       portfolio_type: link.getAttribute('data-portfolio-link')
+                   });
+               }
+           });
+
+           // Handle window resize
+           window.addEventListener('resize', () => {
+               if (window.innerWidth >= 768) {
+                   // Show sidebar on desktop
+                   elements.sidebar.classList.remove('-translate-x-full');
+                   document.getElementById('mobile-overlay').classList.remove('active');
+                   document.body.style.overflow = '';
+               }
+           });
+
+           // Add mobile-specific touch optimizations
+           setupMobileOptimizations();
         }
         
         // Mobile-specific optimizations
@@ -952,5 +987,17 @@
     })();
     </script>
     <!--End of Tawk.to Script-->
+    
+    <!-- Tawk.to Chat Tracking -->
+    <script>
+    // Track Tawk.to chat when it loads
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof Tawk_API !== 'undefined') {
+            Tawk_API.onLoad = function() {
+                gtag('event', 'tawk_chat_opened');
+            };
+        }
+    });
+    </script>
 </body>
 </html>
