@@ -76,6 +76,20 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(31, 41, 55, 0.5);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: rgba(75, 85, 99, 0.8);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(107, 114, 128, 1);
+        }
         
         /* Mobile-specific styles */
         @media (max-width: 767px) {
@@ -158,6 +172,22 @@
             .prose :is(h1, h2, h3, h4, h5, h6) {
                 font-size: 1.1em !important;
             }
+        }
+
+        /* Modal Styles */
+        #modal-overlay {
+            backdrop-filter: blur(4px);
+        }
+        
+        #modal-content {
+            transform: scale(0.95);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        #modal-overlay.open #modal-content {
+            transform: scale(1);
+            opacity: 1;
         }
     </style>
 </head>
@@ -258,8 +288,8 @@
                         <li><a href="#about" class="text-gray-400 hover:text-red-500 transition-colors text-sm">About</a></li>
                         <li><a href="https://giles.vercel.app/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-red-500 transition-colors text-sm">Developer Portfolio</a></li>
                         <li><a href="https://solvethis.qzz.io/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-red-500 transition-colors text-sm">Portfolio Hub</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-red-500 transition-colors text-sm">Privacy Policy</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-red-500 transition-colors text-sm">Terms of Service</a></li>
+                        <li><a href="#privacy" class="text-gray-400 hover:text-red-500 transition-colors text-sm">Privacy Policy</a></li>
+                        <li><a href="#terms" class="text-gray-400 hover:text-red-500 transition-colors text-sm">Terms of Service</a></li>
                     </ul>
                 </div>
                 
@@ -289,6 +319,23 @@
         </div>
     </footer>
     
+    <!-- Modal Container -->
+    <div id="modal-overlay" class="fixed inset-0 bg-black/80 z-[60] hidden flex items-center justify-center p-4">
+        <div id="modal-content" class="bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col border border-gray-700 relative">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-6 border-b border-gray-700 bg-gray-800 rounded-t-xl sticky top-0 z-10">
+                <h2 id="modal-title" class="text-2xl font-bold gradient-text"></h2>
+                <button id="modal-close" class="text-gray-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <!-- Body -->
+            <div id="modal-body" class="p-6 overflow-y-auto custom-scrollbar">
+                <!-- Content injected dynamically -->
+            </div>
+        </div>
+    </div>
+
     <!-- Enhanced JavaScript with better UX -->
     <script src="https://unpkg.com/lunr/lunr.js"></script>
     <script>
@@ -309,12 +356,195 @@
             errorState: document.getElementById('error-state'),
             searchInput: document.getElementById('search-input'),
             sidebar: document.getElementById('sidebar'),
-            toggleButton: document.getElementById('toggle-sidebar')
+            toggleButton: document.getElementById('toggle-sidebar'),
+            modalOverlay: document.getElementById('modal-overlay'),
+            modalContent: document.getElementById('modal-content'),
+            modalTitle: document.getElementById('modal-title'),
+            modalBody: document.getElementById('modal-body'),
+            modalClose: document.getElementById('modal-close')
         };
+        
+        // Modal Content Definitions
+        const modalContent = {
+            about: {
+                title: "About Global News Digest",
+                content: `
+                    <div class="prose prose-invert max-w-none">
+                        <p class="lead text-lg text-gray-300">Global News Digest is an AI-powered news aggregation platform designed to cut through the noise and deliver concise, objective summaries of the world's most critical stories.</p>
+                        
+                        <div class="my-6 p-4 bg-gray-700/50 rounded-lg border border-gray-600">
+                            <h4 class="text-red-400 font-semibold mb-2 flex items-center">
+                                <i class="fas fa-robot mr-2"></i>AI-Generated Content
+                            </h4>
+                            <p class="text-sm text-gray-300 m-0">
+                                Our content is automatically curated and summarized by advanced artificial intelligence models. This allows us to analyze thousands of sources instantly and present you with comprehensive daily digests.
+                            </p>
+                        </div>
+
+                        <h3>Who We Are</h3>
+                        <p>We are a technology-focused team exploring the intersection of media and artificial intelligence. Our goal is to demonstrate how AI can assist in media literacy and information accessibility.</p>
+
+                        <div class="mt-8 pt-6 border-t border-gray-700">
+                            <h3 class="text-xl font-bold mb-4">Meet the Developer</h3>
+                            <div class="flex items-center gap-4 bg-gray-700/30 p-4 rounded-lg">
+                                <div class="flex-1">
+                                    <p class="font-semibold text-white">Giles Alonso</p>
+                                    <p class="text-sm text-gray-400">Full Stack Developer & AI Specialist</p>
+                                </div>
+                                <a href="https://giles.vercel.app/" target="_blank" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm font-medium">
+                                    View Portfolio
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            privacy: {
+                title: "Privacy Policy",
+                content: `
+                    <div class="prose prose-invert max-w-none">
+                        <p class="text-sm text-gray-400 italic mb-6">Last Updated: ${new Date().toLocaleDateString()}</p>
+                        
+                        <h3>1. Data Collection & Usage</h3>
+                        <p>Global News Digest operates primarily as a static, client-side application. We prioritize your privacy by minimizing data collection:</p>
+                        <ul>
+                            <li><strong>Search:</strong> Our search functionality uses <code class="text-red-400">Lunr.js</code> and runs entirely in your browser. No search queries are sent to our servers.</li>
+                            <li><strong>Analytics:</strong> We may use anonymous analytics to understand site traffic patterns, but we do not track individual user behavior.</li>
+                        </ul>
+
+                        <h3>2. Third-Party Services</h3>
+                        <p>We use trusted third-party services to enhance functionality:</p>
+                        <div class="bg-gray-700/30 p-4 rounded-lg mb-4">
+                            <h4 class="text-white mt-0 mb-2">Tawk.to Chat Widget</h4>
+                            <p class="text-sm m-0">We use Tawk.to to provide customer support. If you use the chat widget, Tawk.to may collect data in accordance with their <a href="https://www.tawk.to/privacy-policy/" target="_blank" class="text-red-400 hover:underline">Privacy Policy</a>. This may include your name, email (if provided), and IP address.</p>
+                        </div>
+
+                        <h3>3. Cookies</h3>
+                        <p>We use essential cookies and local storage to:</p>
+                        <ul>
+                            <li>Remember your preferences (e.g., theme settings)</li>
+                            <li>Store read articles locally</li>
+                            <li>Ensure the smooth operation of third-party widgets</li>
+                        </ul>
+                        <p>You can control or delete cookies through your browser settings at any time.</p>
+
+                        <h3>4. Contact Us</h3>
+                        <p>If you have any questions about this Privacy Policy, please contact us via the email provided in the footer.</p>
+                    </div>
+                `
+            },
+            terms: {
+                title: "Terms of Service",
+                content: `
+                    <div class="prose prose-invert max-w-none">
+                        <div class="bg-red-500/10 border border-red-500 rounded-lg p-4 mb-8">
+                            <h4 class="text-red-400 font-bold flex items-center mt-0 mb-2">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                CRITICAL DISCLAIMER: AI Content
+                            </h4>
+                            <p class="text-red-200 text-sm m-0">
+                                The content on this website is generated by Artificial Intelligence. While we strive for accuracy, AI models can produce hallucinations, errors, or misinterpreted information. <strong>Users must independently verify any facts before relying on them.</strong>
+                            </p>
+                        </div>
+
+                        <h3>1. Acceptance of Terms</h3>
+                        <p>By accessing Global News Digest, you agree to be bound by these Terms of Service. If you disagree with any part of these terms, you may not access the service.</p>
+
+                        <h3>2. Use of Content</h3>
+                        <p>We believe in the open dissemination of information:</p>
+                        <ul>
+                            <li><strong>License:</strong> Users are free to copy, distribute, and display content from this site.</li>
+                            <li><strong>Attribution:</strong> You must cite <strong>Global News Digest</strong> as the source when using our content.</li>
+                            <li><strong>Verification:</strong> You accept full responsibility for verifying the accuracy of any content you use.</li>
+                        </ul>
+
+                        <h3>3. Limitation of Liability</h3>
+                        <p>To the fullest extent permitted by law, Global News Digest and its creators shall not be liable for any damages (direct, indirect, incidental, or consequential) arising from:</p>
+                        <ul>
+                            <li>The use or inability to use the service</li>
+                            <li>Any errors or inaccuracies in the AI-generated content</li>
+                            <li>Reliance on information provided on this platform</li>
+                        </ul>
+
+                        <h3>4. Service Availability</h3>
+                        <p>We reserve the right to modify, suspend, or discontinue any part of the service at any time without notice.</p>
+                    </div>
+                `
+            }
+        };
+
+        // Modal Functions
+        function openModal(type) {
+            const data = modalContent[type];
+            if (!data) return;
+
+            elements.modalTitle.textContent = data.title;
+            elements.modalBody.innerHTML = data.content;
+            
+            elements.modalOverlay.classList.remove('hidden');
+            // Small delay to allow display:block to apply before opacity transition
+            setTimeout(() => {
+                elements.modalOverlay.classList.add('open');
+            }, 10);
+            
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            elements.modalOverlay.classList.remove('open');
+            
+            setTimeout(() => {
+                elements.modalOverlay.classList.add('hidden');
+                document.body.style.overflow = '';
+                elements.modalBody.innerHTML = ''; // Clean up
+            }, 300); // Match transition duration
+        }
+
+        function setupModals() {
+            // Close button
+            elements.modalClose.addEventListener('click', closeModal);
+
+            // Click outside to close
+            elements.modalOverlay.addEventListener('click', (e) => {
+                if (e.target === elements.modalOverlay) {
+                    closeModal();
+                }
+            });
+
+            // ESC key to close
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !elements.modalOverlay.classList.contains('hidden')) {
+                    closeModal();
+                }
+            });
+
+            // Bind links
+            document.querySelectorAll('a[href^="#"]').forEach(link => {
+                const href = link.getAttribute('href');
+                if (['#about', '#privacy', '#terms'].includes(href)) {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const type = href.substring(1);
+                        // Map #privacy to privacy key, etc.
+                        // Special handling for legacy links or text differences
+                        let modalType = type;
+                        if (link.textContent.toLowerCase().includes('privacy')) modalType = 'privacy';
+                        if (link.textContent.toLowerCase().includes('terms')) modalType = 'terms';
+                        
+                        openModal(modalType);
+                    });
+                }
+            });
+            
+            // Specifically target footer links to ensure they work even if hrefs are generic
+            const privacyLinks = document.querySelectorAll('a:not([href^="#"])'); // Just in case, but we set them to # in the HTML
+        }
+
         
         // Initialize the app
         async function init() {
             try {
+                setupModals();
                 await loadAvailableDates();
                 setupEventListeners();
                 
