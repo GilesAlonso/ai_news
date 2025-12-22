@@ -263,7 +263,7 @@
                 <div id="news-content" class="hidden fade-in"></div>
                 
                 <!-- Giscus Comments Container -->
-                <div id="giscus-container" class="giscus-container mt-8 pt-6 border-t border-gray-700 hidden"></div>
+                <div id="giscus-container" class="mt-8 pt-8 border-t border-gray-700 hidden"></div>
                 
                 <!-- Error state -->
                 <div id="error-state" class="hidden text-center py-12">
@@ -672,24 +672,22 @@
             // Show the container
             giscusContainer.classList.remove('hidden');
             
-            // Map date to discussion-appropriate identifier
-            // Use date as discussion identifier to create unique threads per news article
-            const discussionTitle = `News for ${date}`;
-            
-            // Create Giscus script element
+            // Create Giscus script element with dynamic date-based discussions
             const script = document.createElement('script');
             script.src = 'https://giscus.app/client.js';
-            script.setAttribute('data-repo', 'gilesAlonso/ai_news');
-            script.setAttribute('data-repo-id', 'R_kgDOM-kkGw');
-            script.setAttribute('data-category', 'Comments');
-            script.setAttribute('data-category-id', 'DIC_kwDOM-kkG84CjY3k');
+            script.setAttribute('data-repo', 'GilesAlonso/ai_news');
+            script.setAttribute('data-repo-id', 'R_kgDOOAfXGg');
+            script.setAttribute('data-category', 'General');
+            script.setAttribute('data-category-id', 'DIC_kwDOOAfXGs4C0II8');
             script.setAttribute('data-mapping', 'specific');
-            script.setAttribute('data-term', discussionTitle);
+            script.setAttribute('data-term', date);
+            script.setAttribute('data-strict', '0');
             script.setAttribute('data-reactions-enabled', '1');
             script.setAttribute('data-emit-metadata', '0');
             script.setAttribute('data-input-position', 'top');
-            script.setAttribute('data-theme', 'dark');
-            script.setAttribute('data-lang', 'en');
+            script.setAttribute('data-theme', 'preferred_color_scheme');
+            script.setAttribute('data-lang', 'pt');
+            script.setAttribute('data-loading', 'lazy');
             script.setAttribute('crossorigin', 'anonymous');
             script.async = true;
             
