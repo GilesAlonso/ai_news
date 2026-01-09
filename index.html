@@ -573,8 +573,15 @@
                 await loadAvailableDates();
                 setupEventListeners();
                 
-                // Load most recent news by default
-                if (state.availableDates.length > 0) {
+                // CHECK FOR URL PARAMETER
+                const urlParams = new URLSearchParams(window.location.search);
+                const dateParam = urlParams.get('date');
+                
+                if (dateParam && state.availableDates.includes(dateParam)) {
+                    // If URL has a valid date, load it
+                    await loadNews(dateParam);
+                } else if (state.availableDates.length > 0) {
+                    // Otherwise load the most recent news
                     await loadNews(state.availableDates[0]);
                 }
                 
@@ -594,7 +601,7 @@
             renderDateList();
         }
         
-        // Render date list with improved UI
+        // Render date list with improved UI and SEO-friendly links
         function renderDateList() {
             elements.dateList.innerHTML = '';
             
@@ -604,8 +611,13 @@
             }
             
             state.availableDates.forEach(date => {
-                const dateItem = document.createElement('div');
-                dateItem.className = 'date-item p-3 rounded-lg cursor-pointer transition-all hover:bg-gray-700';
+                // CHANGE 1: Use <a> tag instead of <div>
+                const dateItem = document.createElement('a');
+                
+                // CHANGE 2: Add real href for Google Bot
+                dateItem.href = `?date=${date}`;
+                
+                dateItem.className = 'date-item p-3 rounded-lg cursor-pointer transition-all hover:bg-gray-700 block text-decoration-none text-white';
                 dateItem.innerHTML = `
                     <div class="flex items-center justify-between">
                         <span class="text-base font-medium">${formatDate(date)}</span>
@@ -614,7 +626,29 @@
                 `;
                 dateItem.setAttribute('data-date', date);
                 
-                dateItem.addEventListener('click', () => loadNews(date));
+                // CHANGE 3: Intercept click to prevent full reload (SPA feel)
+                dateItem.addEventListener('click', (e) => {
+                    e.preventDefault(); // Stop browser from reloading
+                    
+                    // Update URL bar without reloading (for sharing)
+                    const newUrl = new URL(window.location);
+                    newUrl.searchParams.set('date', date);
+                    window.history.pushState({}, '', newUrl);
+                    
+                    loadNews(date);
+                    
+                    // Close mobile sidebar if open
+                    if (window.innerWidth < 768) {
+                        const sidebar = document.getElementById('sidebar');
+                        const mobileOverlay = document.getElementById('mobile-overlay');
+                        const toggleButton = document.getElementById('toggle-sidebar');
+                        
+                        sidebar.classList.add('-translate-x-full');
+                        mobileOverlay.classList.remove('active');
+                        document.body.style.overflow = '';
+                        toggleButton.innerHTML = '<i class="fas fa-bars text-xl"></i>';
+                    }
+                });
                 
                 // Add touch feedback for mobile
                 dateItem.addEventListener('touchstart', () => {
