@@ -369,7 +369,8 @@
             availableDates: [],
             newsIndex: null,
             newsDocs: [],
-            isLoading: true
+            isLoading: false,
+            isLoadingSearch: false
         };
         
         // DOM Elements
@@ -586,7 +587,7 @@
                 }
                 
                 // Load all news for search index
-                await loadAllNews();
+                //await loadAllNews();
                 
             } catch (error) {
                 console.error('Initialization error:', error);
@@ -678,6 +679,9 @@
             
             state.isLoading = true;
             state.currentDate = date;
+
+            // Update the browser tab title
+            document.title = `News: ${formatDate(date)} | Global News Digest`;
             
             // Update UI state
             elements.newsContent.classList.add('hidden');
@@ -839,6 +843,20 @@
         
         // Search functionality with visual feedback
         function setupSearch() {
+            elements.searchInput.addEventListener('focus', async () => {
+                if (!state.newsIndex && !state.isLoadingSearch) {
+                    state.isLoadingSearch = true;
+            
+                    // Show a small loading indicator in the search icon or placeholder
+                    const originalPlaceholder = elements.searchInput.placeholder;
+                    elements.searchInput.placeholder = "Downloading search index...";
+            
+                    await loadAllNews(); // Now we run the heavy task
+            
+                    elements.searchInput.placeholder = originalPlaceholder;
+                    state.isLoadingSearch = false;
+                }
+            });
            elements.searchInput.addEventListener('input', () => {
                const query = elements.searchInput.value.trim();
 
@@ -946,6 +964,19 @@
                }
            });
 
+            // Handle browser Back/Forward buttons
+            window.addEventListener('popstate', (event) => {
+             const urlParams = new URLSearchParams(window.location.search);
+             const dateParam = urlParams.get('date');
+    
+             if (dateParam && state.availableDates.includes(dateParam)) {
+               loadNews(dateParam);
+             } else if (state.availableDates.length > 0) {
+                // If no date in URL, go back to the latest news
+               loadNews(state.availableDates[0]);
+             }
+           });
+            
            // Handle window resize
            window.addEventListener('resize', () => {
                if (window.innerWidth >= 768) {
