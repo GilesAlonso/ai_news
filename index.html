@@ -818,12 +818,32 @@
                 }
         }
         
-        // Comment API URL - Replace with your Google Apps Script Web App URL
-        const COMMENT_API_URL = 'https://script.google.com/macros/s/AKfycbzUVBCLlnHXTyi0Oau8b7kV-91vxfM9Q3JwYBWUBsiK86aSV_JPCNyGkGZD6BQsfWXM/exec';
+                // CSV URL for fetching comments (published Google Sheet)
+        const COMMENTS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vThz7tGNg2uF1gCI3GCndgk4hf-TwnZK2Kf6Doil-T7NttBIwkHmk-mrmrjj1WdC35FgejkRTWKewjI/pub?gid=0&single=true&output=csv";
 
-        // Initialize custom comments
+        // Parse CSV text to array of objects
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split("\n");
+            if (lines.length < 2) return [];
+            
+            const headers = lines[0].split(",").map(h => h.trim().replace(/^"|"$/g, ""));
+            const result = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(",").map(v => v.trim().replace(/^"|"$/g, ""));
+                let obj = {};
+                headers.forEach((header, index) => {
+                    obj[header.toLowerCase()] = values[index] || "";
+                });
+                result.push(obj);
+            }
+            
+            return result;
+        }
+
+        // Initialize custom comments - fetch from published CSV
         async function initializeComments(date) {
-            elements.commentsSection.classList.remove('hidden');
+            elements.commentsSection.classList.remove("hidden");
             elements.commentsList.innerHTML = `
                 <div class="text-center py-6">
                     <div class="loading-spinner mx-auto mb-2"></div>
@@ -832,22 +852,31 @@
             `;
             
             // Track comments load event in GA4
-            gtag('event', 'comments_loaded', {
+            gtag("event", "comments_loaded", {
                 news_date: date
             });
 
             try {
-                const response = await fetch(`${COMMENT_API_URL}?date=${date}`);
-                if (!response.ok) throw new Error('Failed to fetch comments');
+                // Add cache-buster to prevent caching
+                const cacheBuster = new Date().getTime();
+                const response = await fetch(`${COMMENTS_CSV_URL}&_cb=${cacheBuster}`);
+                if (!response.ok) throw new Error("Failed to fetch comments");
                 
-                const comments = await response.json();
+                const csvText = await response.text();
+                const allComments = parseCSV(csvText);
+                
+                // Filter by date and sort by timestamp (newest first)
+                const comments = allComments
+                    .filter(row => row.date === date)
+                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                
                 renderComments(comments);
             } catch (error) {
-                console.error('Error fetching comments:', error);
+                console.error("Error fetching comments:", error);
                 elements.commentsList.innerHTML = `
                     <div class="text-center py-6 text-gray-400">
                         <i class="fas fa-exclamation-circle mb-2 text-xl"></i>
-                        <p>Could not load comments. Please check the API configuration.</p>
+                        <p>Could not load comments. Please try again later.</p>
                     </div>
                 `;
             }
