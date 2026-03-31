@@ -937,6 +937,18 @@
             `).join('');
         }
 
+        // Get user IP address
+        async function getUserIP() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                return data.ip;
+            } catch (e) {
+                console.warn('Could not get IP:', e);
+                return '';
+            }
+        }
+
         async function submitComment(event) {
             event.preventDefault();
             
@@ -964,6 +976,9 @@
             btnSpinner.classList.remove('hidden');
 
             try {
+                // Get user IP
+                const userIP = await getUserIP();
+                
                 // We use fetch with POST. 
                 // Note: CORS with Google Apps Script can be tricky. 
                 // Using 'no-cors' allows the request to reach the server but we can't read the response.
@@ -977,7 +992,8 @@
                         date,
                         author,
                         comment: message,
-                        website: ''
+                        website: '',
+                        ip: userIP
                     })
                 });
                 

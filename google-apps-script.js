@@ -3,7 +3,7 @@
  * 
  * SETUP INSTRUCTIONS:
  * 1. Create a Google Sheet
- * 2. Add columns: Date, Author, Comment, Timestamp, ID
+ * 2. Add columns: Date, Author, Comment, Timestamp, ID, IP
  * 3. Go to Extensions > Apps Script
  * 4. Paste this code and save
  * 5. Deploy > New Deployment > Web App
@@ -66,7 +66,7 @@ function doGet(e) {
 function doPost(e) {
   try {
     const params = JSON.parse(e.postData.contents);
-    const { date, author, comment, website } = params;
+    const { date, author, comment, website, ip } = params;
     
     // Honeypot check for spam prevention
     if (website) {
@@ -82,11 +82,11 @@ function doPost(e) {
     const timestamp = new Date().toISOString();
     const id = Utilities.getUuid();
     
-    sheet.appendRow([date, author, comment, timestamp, id]);
+    sheet.appendRow([date, author, comment, timestamp, id, ip || ""]);
     
     return ContentService.createTextOutput(JSON.stringify({ 
       status: 'success', 
-      comment: { date, author, comment, timestamp, id } 
+      comment: { date, author, comment, timestamp, id, ip } 
     }))
     .setMimeType(ContentService.MimeType.JSON);
     
