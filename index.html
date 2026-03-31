@@ -204,6 +204,63 @@
             transform: scale(1);
             opacity: 1;
         }
+
+        /* Comment System Styles */
+        .comment-form-container {
+            background: rgba(31, 41, 55, 0.5);
+            border: 1px solid rgba(75, 85, 99, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .comment-input {
+            width: 100%;
+            background: rgba(17, 24, 39, 0.8);
+            border: 1px solid rgba(75, 85, 99, 0.5);
+            border-radius: 8px;
+            color: white;
+            padding: 0.75rem 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .comment-input:focus {
+            outline: none;
+            border-color: #ef4444;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+        }
+
+        .comment-card {
+            background: rgba(31, 41, 55, 0.3);
+            border-left: 3px solid #ef4444;
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .comment-author {
+            font-weight: 700;
+            color: #f87171;
+            margin-bottom: 0.25rem;
+        }
+
+        .comment-date {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            margin-bottom: 0.75rem;
+        }
+
+        .comment-text {
+            color: #d1d5db;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+
+        .honeypot {
+            display: none;
+            visibility: hidden;
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex flex-col">
@@ -283,8 +340,40 @@
                 <!-- News Content -->
                 <div id="news-content" class="hidden fade-in"></div>
                 
-                <!-- Giscus Comments Container -->
-                <div id="giscus-container" class="mt-8 pt-8 border-t border-gray-700 hidden"></div>
+                <!-- Custom Comment System -->
+                <div id="comments-section" class="mt-8 pt-8 border-t border-gray-700 hidden">
+                    <h3 class="text-2xl font-bold mb-6 flex items-center">
+                        <i class="fas fa-comments mr-3 text-red-500"></i>
+                        Comments
+                    </h3>
+
+                    <!-- Comment Form -->
+                    <div class="comment-form-container">
+                        <form id="comment-form" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <input type="text" id="comment-author" placeholder="Your Name" required 
+                                    class="comment-input" maxlength="50">
+                                <div class="honeypot">
+                                    <input type="text" id="comment-website" placeholder="Website" tabindex="-1" autocomplete="off">
+                                </div>
+                            </div>
+                            <textarea id="comment-message" placeholder="What do you think about this article?" required 
+                                class="comment-input h-32 resize-none" maxlength="1000"></textarea>
+                            <button type="submit" id="submit-comment" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-colors flex items-center justify-center">
+                                <span id="button-text">Post Comment</span>
+                                <div id="button-spinner" class="loading-spinner w-5 h-5 ml-3 hidden border-t-white border-rgba(255,255,255,0.1)"></div>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Comments List -->
+                    <div id="comments-list" class="space-y-4">
+                        <div class="text-center py-6">
+                            <div class="loading-spinner mx-auto mb-2"></div>
+                            <p class="text-gray-400">Loading comments...</p>
+                        </div>
+                    </div>
+                </div>
                 
                 <!-- Error state -->
                 <div id="error-state" class="hidden text-center py-12">
@@ -387,7 +476,9 @@
             modalTitle: document.getElementById('modal-title'),
             modalBody: document.getElementById('modal-body'),
             modalClose: document.getElementById('modal-close'),
-            giscusContainer: document.getElementById('giscus-container')
+            commentsSection: document.getElementById('comments-section'),
+            commentsList: document.getElementById('comments-list'),
+            commentForm: document.getElementById('comment-form')
         };
         
         // Modal Content Definitions
@@ -706,8 +797,8 @@
                 // Add social sharing buttons to each news item
                 addSocialSharingButtons();
                 
-                // Initialize Giscus comments for the current date
-                initializeGiscus(date);
+                // Initialize comments for the current date
+                initializeComments(date);
                 
                 // Show content with fade-in animation
                 elements.newsContent.classList.remove('hidden');
@@ -727,42 +818,135 @@
                 }
         }
         
-        // Initialize Giscus comments
-        function initializeGiscus(date) {
-            const giscusContainer = document.getElementById('giscus-container');
+        // Comment API URL - Replace with your Google Apps Script Web App URL
+        const COMMENT_API_URL = 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+
+        // Initialize custom comments
+        async function initializeComments(date) {
+            elements.commentsSection.classList.remove('hidden');
+            elements.commentsList.innerHTML = `
+                <div class="text-center py-6">
+                    <div class="loading-spinner mx-auto mb-2"></div>
+                    <p class="text-gray-400">Loading comments...</p>
+                </div>
+            `;
             
-            // Clear existing giscus instance
-            giscusContainer.innerHTML = '';
-            
-            // Show the container
-            giscusContainer.classList.remove('hidden');
-            
-            // Track Giscus load event in GA4
-            gtag('event', 'giscus_loaded', {
+            // Track comments load event in GA4
+            gtag('event', 'comments_loaded', {
                 news_date: date
             });
+
+            try {
+                const response = await fetch(`${COMMENT_API_URL}?date=${date}`);
+                if (!response.ok) throw new Error('Failed to fetch comments');
+                
+                const comments = await response.json();
+                renderComments(comments);
+            } catch (error) {
+                console.error('Error fetching comments:', error);
+                elements.commentsList.innerHTML = `
+                    <div class="text-center py-6 text-gray-400">
+                        <i class="fas fa-exclamation-circle mb-2 text-xl"></i>
+                        <p>Could not load comments. Please check the API configuration.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderComments(comments) {
+            if (comments.length === 0) {
+                elements.commentsList.innerHTML = `
+                    <div class="text-center py-12 text-gray-500 italic">
+                        <p>No comments yet. Be the first to share your thoughts!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            elements.commentsList.innerHTML = comments.map(comment => `
+                <div class="comment-card">
+                    <div class="comment-author">${escapeHtml(comment.author)}</div>
+                    <div class="comment-date">${new Date(comment.timestamp).toLocaleString()}</div>
+                    <div class="comment-text">${escapeHtml(comment.comment).replace(/\n/g, '<br>')}</div>
+                </div>
+            `).join('');
+        }
+
+        async function submitComment(event) {
+            event.preventDefault();
             
-            // Create Giscus script element with dynamic date-based discussions
-            const script = document.createElement('script');
-            script.src = 'https://giscus.app/client.js';
-            script.setAttribute('data-repo', 'GilesAlonso/ai_news');
-            script.setAttribute('data-repo-id', 'R_kgDOOAfXGg');
-            script.setAttribute('data-category', 'General');
-            script.setAttribute('data-category-id', 'DIC_kwDOOAfXGs4C0II8');
-            script.setAttribute('data-mapping', 'specific');
-            script.setAttribute('data-term', date);
-            script.setAttribute('data-strict', '0');
-            script.setAttribute('data-reactions-enabled', '1');
-            script.setAttribute('data-emit-metadata', '0');
-            script.setAttribute('data-input-position', 'top');
-            script.setAttribute('data-theme', 'preferred_color_scheme');
-            script.setAttribute('data-lang', 'pt');
-            script.setAttribute('data-loading', 'lazy');
-            script.setAttribute('crossorigin', 'anonymous');
-            script.async = true;
+            const author = document.getElementById('comment-author').value.trim();
+            const message = document.getElementById('comment-message').value.trim();
+            const website = document.getElementById('comment-website').value.trim();
+            const date = state.currentDate;
             
-            // Append to container
-            giscusContainer.appendChild(script);
+            if (!author || !message || !date) return;
+            
+            // Honeypot check
+            if (website) {
+                console.warn('Spam detected');
+                elements.commentForm.reset();
+                return;
+            }
+
+            const submitBtn = document.getElementById('submit-comment');
+            const btnText = document.getElementById('button-text');
+            const btnSpinner = document.getElementById('button-spinner');
+            
+            // UI state
+            submitBtn.disabled = true;
+            btnText.textContent = 'Posting...';
+            btnSpinner.classList.remove('hidden');
+
+            try {
+                // We use fetch with POST. 
+                // Note: CORS with Google Apps Script can be tricky. 
+                // Using 'no-cors' allows the request to reach the server but we can't read the response.
+                await fetch(COMMENT_API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        date,
+                        author,
+                        comment: message,
+                        website: ''
+                    })
+                });
+                
+                // Track comment submission in GA4
+                gtag('event', 'comment_submitted', {
+                    news_date: date
+                });
+
+                elements.commentForm.reset();
+                
+                // Refresh comments after a short delay
+                setTimeout(() => {
+                    initializeComments(date);
+                    submitBtn.disabled = false;
+                    btnText.textContent = 'Post Comment';
+                    btnSpinner.classList.add('hidden');
+                }, 1500);
+
+            } catch (error) {
+                console.error('Error submitting comment:', error);
+                alert('There was an error posting your comment. Please try again.');
+                submitBtn.disabled = false;
+                btnText.textContent = 'Post Comment';
+                btnSpinner.classList.add('hidden');
+            }
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
         }
         
         // Add social sharing buttons
@@ -945,13 +1129,18 @@
             elements.newsContent.classList.add('hidden');
             elements.loadingState.classList.add('hidden');
             elements.errorState.classList.remove('hidden');
-            elements.giscusContainer.classList.add('hidden');
+            elements.commentsSection.classList.add('hidden');
         }
         
         // Setup all event listeners
         function setupEventListeners() {
            setupSearch();
            setupSidebarToggle();
+
+           // Comment form submission
+           if (elements.commentForm) {
+               elements.commentForm.addEventListener('submit', submitComment);
+           }
 
            // Track portfolio link clicks
            document.addEventListener('click', function(e) {
