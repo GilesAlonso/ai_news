@@ -820,6 +820,9 @@
         
                 // CSV URL for fetching comments (published Google Sheet)
         const COMMENTS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vThz7tGNg2uF1gCI3GCndgk4hf-TwnZK2Kf6Doil-T7NttBIwkHmk-mrmrjj1WdC35FgejkRTWKewjI/pub?gid=0&single=true&output=csv";
+        
+        // Apps Script URL for submitting comments (POST)
+        const COMMENT_API_URL = "https://script.google.com/macros/s/AKfycbzUVBCLlnHXTyi0Oau8b7kV-91vxfM9Q3JwYBWUBsiK86aSV_JPCNyGkGZD6BQsfWXM/exec";
 
         // Parse CSV text to array of objects
         function parseCSV(csvText) {
