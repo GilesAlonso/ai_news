@@ -239,16 +239,22 @@
             animation: fadeIn 0.4s ease-out;
         }
 
+        .comment-header {
+            display: flex;
+            align-items: baseline;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+
         .comment-author {
             font-weight: 700;
             color: #f87171;
-            margin-bottom: 0.25rem;
         }
 
         .comment-date {
             font-size: 0.75rem;
             color: #9ca3af;
-            margin-bottom: 0.75rem;
         }
 
         .comment-text {
@@ -930,8 +936,10 @@
 
             elements.commentsList.innerHTML = comments.map(comment => `
                 <div class="comment-card">
-                    <div class="comment-author">${escapeHtml(comment.author)}</div>
-                    <div class="comment-date">${new Date(comment.timestamp).toLocaleString()}</div>
+                    <div class="comment-header">
+                        <span class="comment-author">${escapeHtml(comment.author)}</span>
+                        <span class="comment-date">${new Date(comment.timestamp).toLocaleString()}</span>
+                    </div>
                     <div class="comment-text">${escapeHtml(comment.comment).replace(/\n/g, '<br>')}</div>
                 </div>
             `).join('');
