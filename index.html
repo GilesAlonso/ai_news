@@ -824,16 +824,49 @@
         // Apps Script URL for submitting comments (POST)
         const COMMENT_API_URL = "https://script.google.com/macros/s/AKfycbzUVBCLlnHXTyi0Oau8b7kV-91vxfM9Q3JwYBWUBsiK86aSV_JPCNyGkGZD6BQsfWXM/exec";
 
-        // Parse CSV text to array of objects
+        // Parse CSV text to array of objects (handles quoted fields with commas)
         function parseCSV(csvText) {
             const lines = csvText.trim().split("\n");
             if (lines.length < 2) return [];
             
-            const headers = lines[0].split(",").map(h => h.trim().replace(/^"|"$/g, ""));
+            // Parse a single CSV line respecting quoted fields
+            function parseLine(line) {
+                const result = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    const nextChar = line[i + 1];
+                    
+                    if (char === '"') {
+                        if (inQuotes && nextChar === '"') {
+                            // Escaped quote within quoted field
+                            current += '"';
+                            i++; // Skip next quote
+                        } else {
+                            // Toggle quote state
+                            inQuotes = !inQuotes;
+                        }
+                    } else if (char === ',' && !inQuotes) {
+                        // End of field
+                        result.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                // Add last field
+                result.push(current.trim());
+                return result;
+            }
+            
+            const headers = parseLine(lines[0]).map(h => h.replace(/^"|"$/g, ""));
             const result = [];
             
             for (let i = 1; i < lines.length; i++) {
-                const values = lines[i].split(",").map(v => v.trim().replace(/^"|"$/g, ""));
+                if (!lines[i].trim()) continue; // Skip empty lines
+                const values = parseLine(lines[i]).map(v => v.replace(/^"|"$/g, ""));
                 let obj = {};
                 headers.forEach((header, index) => {
                     obj[header.toLowerCase()] = values[index] || "";
