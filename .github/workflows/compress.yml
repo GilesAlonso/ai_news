@@ -1,0 +1,36 @@
+name: Auto-Compress New Images
+
+on:
+  push:
+    paths:
+      - 'images/**.png'
+  workflow_dispatch: # Allows you to run it manually if needed
+
+jobs:
+  compress:
+    # This line prevents an infinite loop (stops the bot from reacting to its own commits)
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Compression Tool (pngquant)
+        run: sudo apt-get install -y pngquant
+
+      - name: Compress large PNGs
+        run: |
+          echo "Looking for PNGs larger than 500KB..."
+          # Find images > 500KB and compress them heavily but safely
+          find images -name "*.png" -size +500k -exec pngquant --ext .png --force --speed 1 --quality 60-80 {} \;
+          echo "Compression complete!"
+
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add images/
+          
+          # Only commit if pngquant actually changed the files
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: compress images [skip ci]" && git push)
