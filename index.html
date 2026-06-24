@@ -779,6 +779,12 @@
 
             // Update the browser tab title
             document.title = `News: ${formatDate(date)} | Global News Digest`;
+
+            // Update the canonical URL for Googlebot
+            let canonicalTag = document.querySelector('link[rel="canonical"]');
+            if (canonicalTag) {
+                canonicalTag.setAttribute('href', `https://ai-news-br.vercel.app/?date=${date}`);
+            }
             
             // Update UI state
             elements.newsContent.classList.add('hidden');
