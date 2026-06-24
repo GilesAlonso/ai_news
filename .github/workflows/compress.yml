@@ -1,14 +1,16 @@
-name: Auto-Compress New Images
+name: Auto-Compress Older Images
 
 on:
   push:
     paths:
       - 'images/**.png'
-  workflow_dispatch: # Allows you to run it manually if needed
+  schedule:
+    - cron: '0 12 * * *' # Also runs automatically once a day at noon, just in case
+  workflow_dispatch:
 
 jobs:
   compress:
-    # This line prevents an infinite loop (stops the bot from reacting to its own commits)
+    # Prevents infinite loops (stops the bot from reacting to its own commits)
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     
@@ -19,12 +21,34 @@ jobs:
       - name: Install Compression Tool (pngquant)
         run: sudo apt-get install -y pngquant
 
-      - name: Compress large PNGs
+      - name: Compress images older than 3 days
         run: |
-          echo "Looking for PNGs larger than 500KB..."
-          # Find images > 500KB and compress them heavily but safely
-          find images -name "*.png" -size +500k -exec pngquant --ext .png --force --speed 1 --quality 60-80 {} \;
-          echo "Compression complete!"
+          # Calculate the date from 3 days ago in YYYY-MM-DD format
+          THRESHOLD_DATE=$(date -d "3 days ago" +%Y-%m-%d)
+          echo "Threshold Date: $THRESHOLD_DATE"
+          echo "Looking for images older than this date and larger than 500KB..."
+          
+          # Loop through all png files in the images folder
+          for img in images/*.png; do
+            # Extract just the date from the filename (e.g., 2026-06-20)
+            BASENAME=$(basename "$img" .png)
+            
+            # Check if the filename matches our YYYY-MM-DD format (ignores logos/other files)
+            if [[ $BASENAME =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+              
+              # Compare the dates! (YYYY-MM-DD can be compared alphabetically)
+              if [[ "$BASENAME" < "$THRESHOLD_DATE" ]]; then
+                
+                # Check if the file is larger than 500KB (512000 bytes)
+                FILESIZE=$(stat -c%s "$img")
+                if [ $FILESIZE -gt 512000 ]; then
+                  echo "Compressing $img (Size: $FILESIZE bytes)..."
+                  pngquant --ext .png --force --speed 1 --quality 60-80 "$img"
+                fi
+                
+              fi
+            fi
+          done
 
       - name: Commit and Push changes
         run: |
@@ -32,5 +56,5 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add images/
           
-          # Only commit if pngquant actually changed the files
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: compress images [skip ci]" && git push)
+          # Only commit if pngquant actually changed files
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: compress older images [skip ci]" && git push)
