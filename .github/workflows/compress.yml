@@ -5,12 +5,11 @@ on:
     paths:
       - 'images/**.png'
   schedule:
-    - cron: '0 12 * * *' # Also runs automatically once a day at noon, just in case
+    - cron: '0 12 * * *'
   workflow_dispatch:
 
 jobs:
   compress:
-    # Prevents infinite loops (stops the bot from reacting to its own commits)
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     
@@ -18,34 +17,41 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Compression Tool (pngquant)
-        run: sudo apt-get install -y pngquant
+      - name: Install Compression Tools
+        # We install pngquant, imagemagick, and file (to detect true mime types)
+        run: sudo apt-get install -y pngquant imagemagick file
 
       - name: Compress images older than 3 days
         run: |
-          # Calculate the date from 3 days ago in YYYY-MM-DD format
           THRESHOLD_DATE=$(date -d "3 days ago" +%Y-%m-%d)
           echo "Threshold Date: $THRESHOLD_DATE"
-          echo "Looking for images older than this date and larger than 500KB..."
           
-          # Loop through all png files in the images folder
           for img in images/*.png; do
-            # Extract just the date from the filename (e.g., 2026-06-20)
+            # Check if the file exists (prevents errors if the folder is empty)
+            [ -e "$img" ] || continue
+            
             BASENAME=$(basename "$img" .png)
             
-            # Check if the filename matches our YYYY-MM-DD format (ignores logos/other files)
             if [[ $BASENAME =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
-              
-              # Compare the dates! (YYYY-MM-DD can be compared alphabetically)
               if [[ "$BASENAME" < "$THRESHOLD_DATE" ]]; then
                 
-                # Check if the file is larger than 500KB (512000 bytes)
                 FILESIZE=$(stat -c%s "$img")
                 if [ $FILESIZE -gt 512000 ]; then
-                  echo "Compressing $img (Size: $FILESIZE bytes)..."
-                  pngquant --ext .png --force --speed 1 --quality 60-80 "$img"
+                  # Look at the "DNA" of the file to see what it actually is
+                  MIME_TYPE=$(file -b --mime-type "$img")
+                  echo "Processing $img (Size: $FILESIZE bytes, True format: $MIME_TYPE)"
+                  
+                  if [[ "$MIME_TYPE" == "image/png" ]]; then
+                    # It's a real PNG, use pngquant
+                    pngquant --ext .png --force --speed 1 --quality 60-80 "$img"
+                  else
+                    # It's a JPEG or WebP masquerading as a PNG!
+                    # Use ImageMagick to compress it as a high-efficiency JPEG (Quality 70), 
+                    # but force it to save back into the exact same .png filename.
+                    convert "$img" -strip -interlace Plane -quality 70 jpeg:"$img"
+                  fi
+                  
                 fi
-                
               fi
             fi
           done
@@ -56,5 +62,4 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add images/
           
-          # Only commit if pngquant actually changed files
           git diff --quiet && git diff --staged --quiet || (git commit -m "chore: compress older images [skip ci]" && git push)
