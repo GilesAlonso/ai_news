@@ -698,7 +698,7 @@
         
         // Load available dates
         async function loadAvailableDates() {
-            const response = await fetch('available-dates.json');
+            const response = await fetch('/available-dates.json');
             state.availableDates = await response.json();
             renderDateList();
         }
@@ -733,9 +733,7 @@
                     e.preventDefault(); // Stop browser from reloading
                     
                     // Update URL bar without reloading (for sharing)
-                    const newUrl = new URL(window.location);
-                    newUrl.searchParams.set('date', date);
-                    window.history.pushState({}, '', newUrl);
+                    window.history.pushState({}, '', `/post/${date}`);
                     
                     loadNews(date);
                     
@@ -787,7 +785,7 @@
             // Update the canonical URL for Googlebot
             let canonicalTag = document.querySelector('link[rel="canonical"]');
             if (canonicalTag) {
-                canonicalTag.setAttribute('href', `https://ai-news-br.vercel.app/?date=${date}`);
+                canonicalTag.setAttribute('href', `https://ai-news-br.vercel.app/post/${date}`);
             }
             
             // Update UI state
@@ -804,7 +802,7 @@
             });
             
             try {
-                const response = await fetch(`news/${date}.html`);
+                const response = await fetch(`/news/${date}.html`);
                 if (!response.ok) throw new Error('News not found');
                 
                 const html = await response.text();
@@ -1255,7 +1253,9 @@
             // Handle browser Back/Forward buttons
             window.addEventListener('popstate', (event) => {
              const urlParams = new URLSearchParams(window.location.search);
-             const dateParam = urlParams.get('date');
+             let dateParam = urlParams.get('date');
+             const pathMatch = window.location.pathname.match(/\/post\/(\d{4}-\d{2}-\d{2})/);
+             if (pathMatch) dateParam = pathMatch[1];
     
              if (dateParam && state.availableDates.includes(dateParam)) {
                loadNews(dateParam);
