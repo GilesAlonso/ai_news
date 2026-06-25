@@ -42,13 +42,11 @@ jobs:
                   echo "Processing $img (Size: $FILESIZE bytes, True format: $MIME_TYPE)"
                   
                   if [[ "$MIME_TYPE" == "image/png" ]]; then
-                    # It's a real PNG, use pngquant
-                    pngquant --ext .png --force --speed 1 --quality 60-80 "$img"
+                    # We add an || echo ... fallback so Exit Code 99 doesn't crash the script!
+                    pngquant --ext .png --force --speed 1 --quality 60-80 "$img" || echo "⚠️ Cannot compress $img further without losing quality. Skipping!"
                   else
-                    # It's a JPEG or WebP masquerading as a PNG!
-                    # Use ImageMagick to compress it as a high-efficiency JPEG (Quality 70), 
-                    # but force it to save back into the exact same .png filename.
-                    convert "$img" -strip -interlace Plane -quality 70 jpeg:"$img"
+                    # It's a JPEG/WebP masquerading as a PNG
+                    convert "$img" -strip -interlace Plane -quality 70 jpeg:"$img" || echo "⚠️ ImageMagick failed to convert $img. Skipping!"
                   fi
                   
                 fi
