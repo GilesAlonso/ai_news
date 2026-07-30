@@ -3,7 +3,7 @@ name: Auto-Compress Older Images
 on:
   push:
     paths:
-      - 'images/**.png'
+      - 'images/**'          # was 'images/**.png' — that glob can miss files
   schedule:
     - cron: '0 12 * * *'
   workflow_dispatch:
@@ -12,45 +12,54 @@ jobs:
   compress:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Compression Tools
-        # We install pngquant, imagemagick, and file (to detect true mime types)
-        run: sudo apt-get install -y pngquant imagemagick file
+      - name: Install compression tools
+        run: sudo apt-get update && sudo apt-get install -y imagemagick file
 
       - name: Compress images older than 3 days
         run: |
           THRESHOLD_DATE=$(date -d "3 days ago" +%Y-%m-%d)
           echo "Threshold Date: $THRESHOLD_DATE"
-          
+
           for img in images/*.png; do
-            # Check if the file exists (prevents errors if the folder is empty)
             [ -e "$img" ] || continue
-            
             BASENAME=$(basename "$img" .png)
-            
-            if [[ $BASENAME =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
-              if [[ "$BASENAME" < "$THRESHOLD_DATE" ]]; then
-                
-                FILESIZE=$(stat -c%s "$img")
-                if [ $FILESIZE -gt 512000 ]; then
-                  # Look at the "DNA" of the file to see what it actually is
-                  MIME_TYPE=$(file -b --mime-type "$img")
-                  echo "Processing $img (Size: $FILESIZE bytes, True format: $MIME_TYPE)"
-                  
-                  if [[ "$MIME_TYPE" == "image/png" ]]; then
-                    # We add an || echo ... fallback so Exit Code 99 doesn't crash the script!
-                    pngquant --ext .png --force --speed 1 --quality 60-80 "$img" || echo "⚠️ Cannot compress $img further without losing quality. Skipping!"
-                  else
-                    # It's a JPEG/WebP masquerading as a PNG
-                    convert "$img" -strip -interlace Plane -quality 70 jpeg:"$img" || echo "⚠️ ImageMagick failed to convert $img. Skipping!"
-                  fi
-                  
-                fi
+
+            # Only dated files (YYYY-MM-DD.png)
+            [[ $BASENAME =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || continue
+            # Only older than the threshold (ISO dates compare correctly as strings)
+            [[ "$BASENAME" < "$THRESHOLD_DATE" ]] || continue
+
+            FILESIZE=$(stat -c%s "$img")
+            # Only worth touching files above ~500 KB
+            [ "$FILESIZE" -gt 512000 ] || continue
+
+            MIME_TYPE=$(file -b --mime-type "$img")
+            echo "Processing $img (Size: $FILESIZE bytes, True format: $MIME_TYPE)"
+
+            # Full-color painterly cartoons can't be palettized (pngquant always
+            # bails with exit 99). Lossy JPEG is the right tool: 3-6x smaller and
+            # visually identical for this art. We keep the .png filename so the
+            # site/HTML need no changes (browsers sniff the real format).
+            TMP="${img}.tmp.jpg"
+            if convert "$img" -background white -alpha remove -strip \
+                       -interlace Plane -sampling-factor 4:2:0 -quality 78 "$TMP"; then
+              NEWSIZE=$(stat -c%s "$TMP")
+              if [ "$NEWSIZE" -lt "$FILESIZE" ]; then
+                mv "$TMP" "$img"
+                SAVED=$(( (FILESIZE - NEWSIZE) * 100 / FILESIZE ))
+                echo "  ✓ $FILESIZE -> $NEWSIZE bytes (${SAVED}% smaller)"
+              else
+                rm -f "$TMP"
+                echo "  = conversion not smaller; keeping original"
               fi
+            else
+              rm -f "$TMP"
+              echo "  ⚠️ ImageMagick failed; keeping original"
             fi
           done
 
@@ -59,5 +68,4 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add images/
-          
           git diff --quiet && git diff --staged --quiet || (git commit -m "chore: compress older images [skip ci]" && git push)
